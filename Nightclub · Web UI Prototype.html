@@ -1,0 +1,835 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Nightclub · Web UI Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+/* Tokens: Accent ladder. One small accent per palette; pale tints carry areas. Brand colour/font still [OPEN]. */
+:root{
+  color-scheme: light dark;
+  --av-s:0%;
+  /* Neutrals: pure white in light, pure black in dark, whatever the palette. */
+  --nc-bg:light-dark(#ffffff,#000000); --nc-side:light-dark(#ffffff,#000000);
+  --nc-surface:light-dark(#ffffff,#121212); --nc-surface-2:light-dark(#f5f5f5,#1c1c1e);
+  --nc-active:light-dark(#efefef,#1f1f21); --nc-border:light-dark(#ebebeb,#262626); --nc-control:light-dark(#d4d4d4,#3d3d3f);
+  --nc-text:light-dark(#0b0b0c,#f5f5f5); --nc-muted:light-dark(#6b6b6f,#a8a8ad);
+  --nc-primary:light-dark(#0b0b0c,#f5f5f5); --nc-primary-t:light-dark(#ffffff,#000000);
+  /* Palette (default: Pulse) */
+  --nc-g1:#C81E5B; --nc-g2:#E8561A; --nc-on-grad:#ffffff; --nc-grad:linear-gradient(135deg,var(--nc-g1),var(--nc-g2));
+  --nc-accent:light-dark(#C81E5B,#ff6b9c); --nc-accent-t:#ffffff; --nc-accent-bg:light-dark(#fff0f5,#2a0f1a); --nc-accent-track:light-dark(#ffd0e0,#6b1f3d); --nc-accent-ink:light-dark(#8a1240,#ffb8d0);
+  --nc-success:   light-dark(#247b50, #4fc88a);
+  --nc-success-bg:light-dark(#dcfce7, #12301f);
+  --nc-success-ink:light-dark(#14532d, #8be0b2);
+  --nc-warn:      light-dark(#92400e, #f2b45a);
+  --nc-warn-bg:   light-dark(#fffbeb, #33270f);
+  --nc-danger:    light-dark(#c4242a, #f0777c);
+  --nc-danger-bg: light-dark(#ffedea, #3a1a1c);
+  --nc-danger-ink:light-dark(#831c1e, #f5a3a6);
+  --nc-shadow-lg: light-dark(0 12px 32px rgb(0 0 0 / .16), 0 12px 32px rgb(0 0 0 / .7));
+  --ease:cubic-bezier(.23,1,.32,1);
+  --r-sm:6px; --r-md:10px; --r-lg:14px;
+  --gap:24px;
+  --font: "DM Sans", system-ui, -apple-system, "Segoe UI", "Noto Sans Telugu", "Nirmala UI", sans-serif;
+  accent-color: var(--nc-accent);
+}
+:root[data-theme="light"]{ color-scheme: light; }
+:root[data-theme="dark"]{ color-scheme: dark; }
+/* Palette options (prototype toggle). Each owns a gradient + an accent ladder. */
+:root[data-palette="zest"]{
+  --nc-g1:#0A7A1E; --nc-g2:#2E9B3F; --nc-on-grad:#ffffff; --nc-grad:linear-gradient(135deg,var(--nc-g1),var(--nc-g2));
+  --nc-accent:light-dark(#0C831F,#4ed06b); --nc-accent-t:#ffffff; --nc-accent-bg:light-dark(#fff4c2,#2e2606); --nc-accent-track:light-dark(#f8cb46,#8a6f00); --nc-accent-ink:light-dark(#5c4700,#ffe07a);
+}
+:root[data-palette="spark"]{
+  --nc-g1:#D9480F; --nc-g2:#C2255C; --nc-on-grad:#ffffff; --nc-grad:linear-gradient(135deg,var(--nc-g1),var(--nc-g2));
+  --nc-accent:light-dark(#D9480F,#ff8a4c); --nc-accent-t:#ffffff; --nc-accent-bg:light-dark(#fff0e6,#2e1608); --nc-accent-track:light-dark(#ffd2b3,#6b2e0a); --nc-accent-ink:light-dark(#7a2300,#ffc9a3);
+}
+:root[data-palette="wave"]{
+  --nc-g1:#0A66C2; --nc-g2:#0B8F8C; --nc-on-grad:#ffffff; --nc-grad:linear-gradient(135deg,var(--nc-g1),var(--nc-g2));
+  --nc-accent:light-dark(#0A66C2,#5aa9ff); --nc-accent-t:#ffffff; --nc-accent-bg:light-dark(#e8f1fb,#0b1a2e); --nc-accent-track:light-dark(#c4dcf5,#1b4a80); --nc-accent-ink:light-dark(#07407d,#b3d5ff);
+}
+:root[data-palette="graphite"]{
+  --nc-g1:light-dark(#111111,#f5f5f5); --nc-g2:light-dark(#3a3a3c,#bdbdbd); --nc-on-grad:light-dark(#ffffff,#000000); --nc-grad:linear-gradient(135deg,var(--nc-g1),var(--nc-g2));
+  --nc-accent:light-dark(#111111,#ffffff); --nc-accent-t:light-dark(#ffffff,#000000); --nc-accent-bg:light-dark(#f2f2f2,#1c1c1e); --nc-accent-track:light-dark(#e0e0e0,#3a3a3c); --nc-accent-ink:light-dark(#111111,#ffffff);
+}
+.pal{display:flex;flex-direction:column;gap:2px}
+.pal button{display:flex;align-items:center;gap:12px;padding:10px;border:0;background:none;border-radius:6px;cursor:pointer;text-align:left;width:100%}
+.pal button:hover{background:var(--nc-surface-2)} .pal button[aria-pressed="true"]{background:var(--nc-active)}
+.pal .sw3{display:block;flex:none;border-radius:8px;width:54px;height:28px}
+.pal .sw3 i{flex:1;display:block}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--nc-bg);color:var(--nc-text);font:400 14px/1.5 var(--font);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+:lang(te) body, html[lang="te"] body{line-height:1.7}
+h1,h2,h3,h4,p{margin:0}
+h1{font-size:28px;line-height:1.15;font-weight:700;letter-spacing:-.02em}
+h2{font-size:16px;font-weight:600}
+h3{font-size:14px;font-weight:600}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--nc-accent);outline-offset:2px;border-radius:4px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.skip{position:absolute;left:8px;top:-60px;background:var(--nc-primary);color:var(--nc-primary-t);padding:8px 14px;border-radius:6px;z-index:100;text-decoration:none}
+.skip:focus{top:8px}
+.muted{color:var(--nc-muted)} .small{font-size:13px} .xs{font-size:12px}
+.row{display:flex;align-items:center;gap:10px} .between{justify-content:space-between} .wrap{flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:14px} .stack-s{display:flex;flex-direction:column;gap:8px}
+.grow{flex:1;min-width:0}
+.lbl{font-size:13px;font-weight:500;color:var(--nc-muted)}
+svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* Shell: open plane. Sidebar sits on the page ground, no rule, no top bar chrome. */
+.shell{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100dvh}
+.side{position:sticky;top:0;height:100dvh;display:flex;flex-direction:column;gap:4px;padding:20px 10px 14px;background:var(--nc-side);border-right:1px solid var(--nc-border);overflow:auto}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 10px 16px;font-weight:700;font-size:17px;letter-spacing:-.02em;text-decoration:none}
+.logo b{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--nc-grad);color:var(--nc-on-grad);font-size:16px;font-weight:800}
+.logo small{display:block;font-size:12px;font-weight:400;color:var(--nc-muted);letter-spacing:0;margin-top:-1px}
+.sbtn{display:flex;align-items:center;gap:10px;width:100%;height:32px;padding:0 10px;border:1px solid var(--nc-control);border-radius:6px;background:var(--nc-surface);color:var(--nc-muted);cursor:pointer;margin-bottom:10px;font-size:14px}
+.sbtn kbd{margin-left:auto;font:400 12px var(--font);color:var(--nc-muted)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border-radius:6px;text-decoration:none;color:var(--nc-muted);position:relative}
+.nav a:hover{background:var(--nc-surface-2);color:var(--nc-text)}
+.nav a[aria-current="page"]{background:var(--nc-active);color:var(--nc-text);font-weight:500}
+.nav a[aria-current="page"] svg.i{color:var(--nc-accent)}
+.nav .cnt{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--nc-grad);color:var(--nc-on-grad);font-size:12px;font-weight:700;display:grid;place-items:center}
+.nav-h{margin:28px 10px 6px;font-size:12px;font-weight:500;color:var(--nc-muted)}
+.me{margin-top:auto;display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;border:0;background:none;cursor:pointer;text-align:left;width:100%}
+.me:hover{background:var(--nc-surface-2)}
+.av{position:relative;isolation:isolate;--s:36px;width:var(--s);height:var(--s);border-radius:50%;display:grid;place-items:center;flex:none;color:hsl(var(--h) var(--av-s) 22%);font-weight:600;font-size:calc(var(--s)*.38);background:hsl(var(--h) var(--av-s) 88%)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .av{color:hsl(var(--h) var(--av-s) 85%);background:hsl(var(--h) var(--av-s) 22%)}}
+:root[data-theme="dark"] .av{color:hsl(var(--h) var(--av-s) 85%);background:hsl(var(--h) var(--av-s) 22%)}
+.av.ring::before{content:"";position:absolute;inset:-4px;border-radius:50%;background:var(--nc-grad);z-index:-2}
+.av.ring::after{content:"";position:absolute;inset:-2px;border-radius:50%;background:var(--nc-surface);z-index:-1}
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:8px;padding:10px 24px;background:var(--nc-bg)}
+.top .logo{display:none;padding:0}
+.top .sp{flex:1}
+.ib{display:grid;place-items:center;width:34px;height:34px;border-radius:6px;border:0;background:none;cursor:pointer;position:relative;color:var(--nc-text)}
+.ib:hover{background:var(--nc-surface-2)}
+.ib,.tbtn,.chip,.nav a,.crow,.pop-i{transition:background-color .15s,transform .16s var(--ease),color .15s}
+.ib:active,.tbtn:active,button.chip:active{transform:scale(.95)}
+.nav a:active{transform:scale(.98)}
+.ib .dot{position:absolute;top:2px;right:0;min-width:16px;height:16px;border-radius:8px;background:var(--nc-grad);color:var(--nc-on-grad);font-size:11px;font-weight:600;display:grid;place-items:center;padding:0 4px}
+.tbtn{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:6px;border:1px solid var(--nc-control);background:var(--nc-surface);cursor:pointer;font-weight:500;font-size:13px}
+.tbtn:hover{background:var(--nc-surface-2)}
+.page{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:var(--gap);padding:8px 32px 48px;max-width:1280px;width:100%;margin:0 auto;align-items:start}
+.page.norail{grid-template-columns:minmax(0,1fr);max-width:1000px}
+.col{display:flex;flex-direction:column;gap:var(--gap);min-width:0}
+.rail{display:flex;flex-direction:column;gap:var(--gap);position:sticky;top:60px}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.ph p.sub{color:var(--nc-muted);margin-top:6px;max-width:64ch;font-size:15px}
+.tabbar{display:none}
+.seg{display:none}
+
+/* Primitives: flat surfaces, a 1px edge, no shadow at rest. */
+.card{background:var(--nc-surface);border:1px solid var(--nc-border);border-radius:var(--r-lg);padding:20px;container-type:inline-size}
+.card.flat{background:var(--nc-surface)}
+.card h2{margin-bottom:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 14px;border-radius:6px;border:1px solid var(--nc-control);background:var(--nc-surface);font-weight:500;font-size:14px;cursor:pointer;text-decoration:none;min-height:38px;transition:background-color .15s,filter .15s,transform .16s var(--ease)}
+.btn:hover{background:var(--nc-surface-2)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--nc-grad);border-color:transparent;color:var(--nc-on-grad);font-weight:600}
+.btn.primary:hover{background:var(--nc-grad);filter:brightness(1.08)}
+.btn.ghost{border-color:transparent;background:none;color:var(--nc-muted)}
+.btn.ghost:hover{background:var(--nc-surface-2);color:var(--nc-text)}
+.btn.danger{color:var(--nc-danger);border-color:var(--nc-control)}
+.btn.sm{min-height:32px;padding:0 11px;font-size:13px}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.chip{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px;border-radius:999px;background:var(--nc-surface-2);color:var(--nc-text);font-size:12px;font-weight:500;white-space:nowrap;flex:none}
+button.chip{cursor:pointer;height:28px;padding:0 12px;border:1px solid var(--nc-control);background:var(--nc-surface)} button.chip:hover{background:var(--nc-surface-2)}
+button.chip[aria-pressed="true"]{background:var(--nc-accent-bg);border-color:var(--nc-accent);color:var(--nc-accent-ink)}
+.chip.ok{background:var(--nc-success-bg);color:var(--nc-success-ink)}
+.chip.warn{background:var(--nc-warn-bg);color:var(--nc-warn)}
+.chip.acc{background:var(--nc-accent-bg);color:var(--nc-accent-ink)}
+.chip.bad{background:var(--nc-danger-bg);color:var(--nc-danger-ink)}
+.prov{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:2px 8px 2px 6px;border-radius:4px}
+.prov svg.i{width:14px;height:14px}
+.prov.verified{background:var(--nc-success-bg);color:var(--nc-success-ink)}
+.prov.peer{background:var(--nc-accent-bg);color:var(--nc-accent-ink)}
+.prov.self{background:var(--nc-surface-2);color:var(--nc-muted)}
+.bar{height:8px;border-radius:99px;background:var(--nc-accent-bg);overflow:hidden;display:flex}
+.bar i{display:block;height:100%;background:var(--nc-grad);border-radius:99px;transition:width .5s var(--ease)}
+.hr{height:1px;background:var(--nc-border);border:0;margin:0}
+.link{background:none;border:0;padding:0;color:var(--nc-text);font-weight:500;cursor:pointer;text-decoration:underline;text-decoration-color:var(--nc-control);text-underline-offset:3px}
+.link:hover{text-decoration-color:var(--nc-accent)}
+.banner{display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border-radius:6px;background:var(--nc-surface-2);color:var(--nc-muted);font-size:13px}
+.banner svg.i{margin-top:2px}
+.banner b{color:var(--nc-text);font-weight:600}
+.empty{display:grid;justify-items:center;gap:8px;text-align:center;padding:32px 18px;border:1px dashed var(--nc-control);border-radius:var(--r-lg);color:var(--nc-muted)}
+.empty h3{color:var(--nc-text)}
+.caught{display:flex;align-items:center;gap:12px;color:var(--nc-muted);font-size:13px;padding:6px 2px}
+.caught::before,.caught::after{content:"";flex:1;height:1px;background:var(--nc-border)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--nc-border);overflow:auto}
+.tabs button{padding:10px 12px;border:0;background:none;cursor:pointer;font-weight:500;color:var(--nc-muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--nc-text);border-color:var(--nc-accent)}
+.tabs button:hover{color:var(--nc-text)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gap)}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--gap)}
+input[type=text],input[type=search],input[type=url],input[type=email],select,textarea{width:100%;font:inherit;color:inherit;background:var(--nc-surface);border:1px solid var(--nc-control);border-radius:6px;padding:8px 12px;min-height:38px}
+textarea{resize:vertical;min-height:84px}
+input::placeholder,textarea::placeholder{color:#6b6b6b;opacity:1}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--nc-accent);outline-offset:1px}
+label.f{display:grid;gap:6px;font-weight:500;font-size:14px}
+label.f .hint{font-weight:400;color:var(--nc-muted);font-size:12px}
+.err{display:none;color:var(--nc-danger);font-size:12px;font-weight:500}
+:is(input,select,textarea):user-invalid{border-color:var(--nc-danger)}
+:is(input,select,textarea):user-invalid ~ .err{display:block}
+input[type=range]{width:100%}
+.sw{appearance:none;width:32px;height:18px;border-radius:99px;background:var(--nc-control);position:relative;cursor:pointer;flex:none;transition:background .2s;border:0}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw:checked{background:var(--nc-grad)} .sw:checked::after{transform:translateX(14px);background:var(--nc-on-grad)}
+.sw:disabled{opacity:.55;cursor:not-allowed}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}.kv dt{color:var(--nc-muted)}.kv dd{margin:0;font-weight:500}
+
+/* Feature pieces */
+.next{border-color:transparent;background:var(--nc-grad);color:var(--nc-on-grad);padding:24px}
+.next .lead{font-size:22px;font-weight:700;line-height:1.25;letter-spacing:-.01em}
+.next .muted,.next .lbl{color:color-mix(in srgb,var(--nc-on-grad) 82%,transparent)}
+.next .link{color:inherit;text-decoration-color:color-mix(in srgb,var(--nc-on-grad) 55%,transparent)}
+.next .btn{background:color-mix(in srgb,var(--nc-on-grad) 18%,transparent);border-color:transparent;color:var(--nc-on-grad)}
+.next .btn:hover{background:color-mix(in srgb,var(--nc-on-grad) 28%,transparent)}
+.next .btn.primary{background:var(--nc-on-grad);color:var(--nc-g1);filter:none}
+.next .btn.ghost{background:none}
+.next .av{background:color-mix(in srgb,var(--nc-on-grad) 22%,transparent);color:var(--nc-on-grad)}
+.pcard{display:flex;flex-direction:column;gap:12px}
+.pcard .skills{display:flex;gap:6px;flex-wrap:wrap}
+.pcard .contrib{background:var(--nc-surface-2);border-radius:6px;padding:10px 12px;font-size:13px}
+.pcard .contrib b{display:block;font-size:12px;font-weight:600;color:var(--nc-muted);margin-bottom:2px}
+.cover{display:flex;gap:8px;flex-wrap:wrap}
+.cover .chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--nc-control)}
+.cover .chip.ok::before{background:var(--nc-success)} .cover .chip.warn::before{background:var(--nc-warn)}
+.feedcard{display:flex;gap:12px}
+.board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--gap);align-items:stretch}
+.col-b{background:var(--nc-surface-2);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:120px}
+.col-b h3{font-size:13px;font-weight:500;color:var(--nc-muted);display:flex;justify-content:space-between}
+.task{background:var(--nc-surface);border:1px solid var(--nc-border);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px;font-size:13px}
+.steps{display:flex;gap:0;list-style:none;margin:0;padding:0;overflow:auto}
+.steps li{flex:1;min-width:120px;position:relative;padding-top:20px;font-size:13px}
+.steps li::before{content:"";position:absolute;top:6px;left:0;right:0;height:3px;background:var(--nc-border)}
+.steps li::after{content:"";position:absolute;top:0;left:0;width:15px;height:15px;border-radius:50%;background:var(--nc-surface);border:3px solid var(--nc-border)}
+.steps li.done::before{background:var(--nc-success)} .steps li.done::after{background:var(--nc-success);border-color:var(--nc-success)}
+.steps li.now::after{border-color:var(--nc-accent)}
+.steps b{display:block;font-weight:600}
+.msgs{display:grid;grid-template-columns:300px minmax(0,1fr);height:min(640px,calc(100dvh - 190px));padding:0;overflow:hidden}
+.clist{border-right:1px solid var(--nc-border);overflow:auto}
+.crow{display:flex;gap:10px;padding:12px 14px;border:0;background:none;width:100%;text-align:left;cursor:pointer;border-bottom:1px solid var(--nc-border)}
+.crow:hover{background:var(--nc-surface-2)} .crow[aria-current="true"]{background:var(--nc-active)}
+.thread{display:flex;flex-direction:column;min-width:0}
+.thread header{padding:12px 16px;border-bottom:1px solid var(--nc-border);display:flex;align-items:center;gap:10px}
+.tmsgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.bub{max-width:75%;padding:8px 12px;border-radius:8px;background:var(--nc-surface-2);align-self:flex-start;font-size:14px;overflow-wrap:anywhere}
+.bub.me{align-self:flex-end;background:var(--nc-grad);color:var(--nc-on-grad)}
+.bub small{display:block;opacity:.75;font-size:12px;margin-top:2px}
+.comp{display:flex;gap:8px;padding:12px;border-top:1px solid var(--nc-border);align-items:flex-end}
+.comp textarea{min-height:38px;max-height:120px}
+.starters{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 10px}
+.wbar{height:10px;border-radius:99px;overflow:hidden;display:flex;gap:2px;background:none}
+.wbar i{display:block;height:100%;transition:width .25s}
+.w1{background:var(--nc-grad)} .w2{background:color-mix(in srgb,var(--nc-g1) 55%,var(--nc-surface))} .w3{background:light-dark(#8e8e93,#8e8e93)} .w4{background:light-dark(#d4d4d8,#3a3a3c)}
+.wrow{display:grid;grid-template-columns:140px 1fr 48px;gap:12px;align-items:center}
+.wrow output{font-weight:600;text-align:right}
+.stat{display:flex;flex-direction:column}.stat b{font-size:34px;line-height:1.05;font-weight:800;letter-spacing:-.02em;background:var(--nc-grad);-webkit-background-clip:text;background-clip:text;color:transparent;width:fit-content}
+.story{display:flex;flex-direction:column;gap:10px}
+.story .thumb{height:96px;border-radius:10px;background:var(--nc-grad);display:grid;place-items:center;color:var(--nc-on-grad);font-weight:600;font-size:16px;padding:8px;text-align:center}
+.story.draft{border-style:dashed}
+
+/* Overlays: the only things that float get a shadow. */
+dialog{border:1px solid var(--nc-border);border-radius:12px;padding:0;background:var(--nc-surface);color:var(--nc-text);box-shadow:var(--nc-shadow-lg);width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 32px)}
+dialog.wide{width:min(760px,calc(100vw - 24px))}
+dialog:modal{overscroll-behavior:contain}
+dialog::backdrop{background:rgb(15 10 15 / .45);overflow:hidden;overscroll-behavior:contain}
+.dlg-body{padding:22px;display:flex;flex-direction:column;gap:16px}
+.dlg-h{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.dlg-f{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+#cmd{width:min(600px,calc(100vw - 24px));margin-top:12vh}
+#cmd input{border:0;border-bottom:1px solid var(--nc-border);border-radius:0;padding:16px 18px;font-size:16px;background:none}
+#cmd ul{list-style:none;margin:0;padding:8px;max-height:50dvh;overflow:auto}
+#cmd li button{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;background:none;border-radius:6px;cursor:pointer;text-align:left}
+#cmd li button:hover,#cmd li button:focus-visible{background:var(--nc-active)}
+[popover]{margin:0;inset:auto;position:fixed;top:56px;right:16px;border:1px solid var(--nc-border);border-radius:8px;padding:8px;background:var(--nc-surface);color:var(--nc-text);box-shadow:var(--nc-shadow-lg);width:min(360px,calc(100vw - 24px));max-height:calc(100dvh - 90px);overflow:auto}
+.pop-i{display:flex;gap:10px;padding:10px;border-radius:6px;text-decoration:none;border:0;background:none;width:100%;text-align:left;cursor:pointer}
+.pop-i:hover{background:var(--nc-surface-2)}
+#toasts{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:200;align-items:center;pointer-events:none}
+.toast{background:var(--nc-primary);color:var(--nc-primary-t);padding:10px 16px;border-radius:6px;box-shadow:var(--nc-shadow-lg);font-weight:500;font-size:14px;animation:tin .25s;pointer-events:auto;max-width:min(92vw,460px)}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}}
+
+/* Onboarding (no shell) */
+body.onb .shell{display:none}
+#onb{display:none}
+body.onb #onb{display:grid;min-height:100dvh;place-items:start center;padding:48px 16px}
+.onb-card{width:min(600px,100%);display:flex;flex-direction:column;gap:20px}
+.pills{display:flex;gap:6px}.pills i{flex:1;height:4px;border-radius:99px;background:var(--nc-accent-track)}.pills i.on{background:var(--nc-grad)}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--nc-control);border-radius:6px;cursor:pointer}
+.opt:has(input:checked){border-color:var(--nc-accent);background:var(--nc-accent-bg)}
+
+/* Responsive */
+@media (max-width:1180px){ .page{grid-template-columns:minmax(0,1fr)} .rail{position:static;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))} }
+@media (max-width:1023px) and (min-width:760px){
+  .shell{grid-template-columns:72px minmax(0,1fr)}
+  .side{padding:12px 8px;align-items:center}
+  .logo span,.sbtn span,.sbtn kbd,.nav a span,.nav-h,.me .grow,.circ-nav{display:none}
+  .logo{padding:6px 0 10px}.nav a{justify-content:center;padding:0}.nav a{width:44px}.nav .cnt{position:absolute;top:0;right:0;margin:0}
+  .sbtn{justify-content:center;padding:0;width:44px}
+}
+@media (max-width:759px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .top{padding:8px 12px}.top .logo{display:flex}.top .tbtn span{display:none}
+  .page{padding:8px 16px calc(84px + env(safe-area-inset-bottom));gap:16px}
+  h1{font-size:24px}
+  .grid2,.grid3{grid-template-columns:minmax(0,1fr)}
+  .board{grid-template-columns:minmax(0,1fr)}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;inset:auto 0 0 0;z-index:30;background:var(--nc-surface);border-top:1px solid var(--nc-border);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;font-weight:500;text-decoration:none;color:var(--nc-muted);padding:6px 2px;position:relative;border-radius:6px;min-height:44px}
+  .tabbar a[aria-current="page"]{color:var(--nc-text)} .tabbar a[aria-current="page"] svg.i{color:var(--nc-accent)}
+  .tabbar .cnt{position:absolute;top:2px;left:calc(50% + 6px);min-width:16px;height:16px;border-radius:8px;background:var(--nc-grad);color:var(--nc-on-grad);font-size:11px;font-weight:600;display:grid;place-items:center;padding:0 4px}
+  .seg{display:flex;gap:4px;padding:4px;background:var(--nc-surface-2);border-radius:8px}
+  .seg a{flex:1;text-align:center;padding:7px;border-radius:6px;text-decoration:none;font-weight:500;font-size:13px;color:var(--nc-muted)}
+  .seg a[aria-current="page"]{background:var(--nc-surface);color:var(--nc-text)}
+  .msgs{grid-template-columns:minmax(0,1fr);height:calc(100dvh - 210px)}
+  .msgs[data-open="1"] .clist{display:none}.msgs[data-open="0"] .thread{display:none}
+  .mback{display:inline-flex !important}
+  .wrow{grid-template-columns:1fr 44px}.wrow label{grid-column:1/-1}.wrow input{grid-column:1}
+  [popover]{right:8px;left:8px;width:auto}
+}
+.mback{display:none}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
+@media (forced-colors:active){.prov,.chip{border:1px solid CanvasText}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="shell" id="shell">
+  <aside class="side" aria-label="Primary">
+    <a class="logo" href="#/home"><b>N</b><span>Nightclub</span></a>
+    <button class="sbtn" data-a="cmd" aria-label="Search (Ctrl K)"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span data-t>Search</span><kbd>⌘K</kbd></button>
+    <nav class="nav" id="nav" aria-label="Main"></nav>
+    <p class="nav-h circ-nav" data-t>Your circles</p>
+    <nav class="nav circ-nav" aria-label="Your circles"><a href="#/circles/telugu-tutor"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg><span>Telugu Tutor AI</span></a></nav>
+    <button class="me" popovertarget="pop-me"><span class="av" style="--h:250"  aria-hidden="true">RT</span><span class="grow"><b>Ravi Teja</b><br><span class="xs muted">Full-stack developer</span></span></button>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <a class="logo" href="#/home"><b>N</b></a>
+      
+      <span class="sp"></span><button class="ib" id="themebtn" data-a="theme-toggle" aria-label="Switch to dark mode" title="Light / dark"></button><button class="tbtn" popovertarget="pop-pal" title="Try a colour palette"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 8h5M12 13h6"/></svg><span>Palette</span></button><button class="tbtn" data-a="loop" title="How this screen works as a Hooked loop"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg><span>Hooked loop</span></button>
+      <button class="ib" data-a="cmd" aria-label="Search" style="display:none" id="topsearch"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
+      <button class="ib" popovertarget="pop-proto" aria-label="Prototype controls"><svg class="i" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg></button>
+      <button class="ib" popovertarget="pop-notif" aria-label="Notifications"><svg class="i" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="dot" id="ndot" hidden></span></button>
+    </header>
+    <main id="main" tabindex="-1"></main>
+  </div>
+</div>
+
+<nav class="tabbar" id="tabbar" aria-label="Main (mobile)"></nav>
+<div id="onb"></div>
+
+<div popover id="pop-notif" aria-label="Notifications"></div>
+<div popover id="pop-me">
+  <div class="pop-i" style="cursor:default"><span class="av" style="--h:250" aria-hidden="true">RT</span><span><b>Ravi Teja</b><br><span class="xs muted">Member · 3 of 8 sessions used</span></span></div>
+  <hr class="hr">
+  <a class="pop-i" href="#/settings" data-a="go">Settings</a>
+  <a class="pop-i" href="#/membership" data-a="go">Membership &amp; billing</a>
+  <a class="pop-i" href="#/safety" data-a="go">Safety &amp; privacy</a>
+  <a class="pop-i" href="#/onboarding" data-a="go">Replay onboarding</a>
+  <a class="pop-i" href="#/admin" data-a="go">Admin view (role-gated)</a>
+</div>
+<div popover id="pop-proto"></div>
+<div popover id="pop-pal" aria-label="Colour palette"></div>
+
+<dialog id="dlg" closedby="any" aria-labelledby="dlg-title"></dialog>
+<dialog id="cmd" closedby="any" aria-label="Search and jump to"><input id="cmdq" type="search" placeholder="Search members, circles, sessions, settings…" aria-label="Search" autocomplete="off"><ul id="cmdl"></ul></dialog>
+<div id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ═════════ helpers ═════════ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const I={
+home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+four:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+compass:'<circle cx="12" cy="12" r="10"/><path d="m16.24 7.76-2.12 6.36-6.36 2.12 2.12-6.36z"/>',
+circles:'<circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/>',
+build:'<path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/>',
+cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+msg:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+brief:'<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
+pass:'<circle cx="12" cy="9" r="6"/><path d="M8.2 13.9 7 23l5-3 5 3-1.2-9.1"/>',
+check:'<path d="M20 6 9 17l-5-5"/>', x:'<path d="M18 6 6 18M6 6l12 12"/>', plus:'<path d="M12 5v14M5 12h14"/>',
+arrow:'<path d="M5 12h14m-7-7 7 7-7 7"/>', send:'<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+bm:'<path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>',
+shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+card:'<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+pen:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+pin:'<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/>',
+lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>'
+};
+const ic=(n,s)=>`<svg class="i" viewBox="0 0 24 24" aria-hidden="true"${s?` style="width:${s}px;height:${s}px"`:''}>${I[n]||''}</svg>`;
+const ini=n=>n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const av=(n,h,s=36,ring)=>`<span class="av${ring?' ring':''}" style="--h:${h};--s:${s}px" aria-hidden="true">${ini(n)}</span>`;
+const PROV={verified:['Artifact-verified','check'],peer:['Peer-acknowledged','four'],self:['Self-reported','pen']};
+const prov=k=>`<span class="prov ${k}">${ic(PROV[k][1])}${PROV[k][0]}</span>`;
+function toast(m,ms=3200){const t=document.createElement('div');t.className='toast';t.textContent=m;$('#toasts').append(t);setTimeout(()=>t.remove(),ms)}
+
+/* ═════════ i18n (sample strings only — needs native Telugu review) ═════════ */
+const TE={'Home':'హోమ్','Find Your Four':'మీ నలుగురిని కనుగొనండి','Discover':'అన్వేషించండి','Circles':'సర్కిల్స్','Build Missions':'బిల్డ్ మిషన్లు','Sessions':'సెషన్లు','Messages':'సందేశాలు','Opportunities':'అవకాశాలు','Builder Passport':'బిల్డర్ పాస్‌పోర్ట్','Search':'వెతకండి','Your circles':'మీ సర్కిల్స్','Settings':'సెట్టింగ్స్','Good evening':'శుభ సాయంత్రం','Build':'బిల్డ్','Inbox':'ఇన్‌బాక్స్','Profile':'ప్రొఫైల్'};
+const t=k=>S.lang==='te'&&TE[k]?TE[k]:k;
+
+/* ═════════ data (sample) ═════════ */
+const GOALS={startup:['Startup building','w1'],career:['Career & jobs','w2'],freelance:['Freelance & clients','w3'],learning:['Learning & experiments','w4']};
+const MEMBERS=[
+ {id:'priya',name:'Priya Reddy',role:'Flutter mobile developer',h:330,skills:['Flutter','Dart','Firebase'],cat:'Mobile',avail:'8 hrs/week · IST',lang:'Telugu, English',
+  contrib:'Build the mobile client for voice lessons.',tier:'Strong fit on goals',
+  why:['You are looking for a mobile partner; Priya ships Flutter apps.','You both set Startup as your top goal.','7 of her 8 weekly hours overlap with yours.'],
+  lim:['Has not worked on an AI product before.'],ev:[['Shipped “Kisan Mitra” Flutter app','verified'],['Spoke at Telugu Flutter meetup','peer']]},
+ {id:'karthik',name:'Karthik Varma',role:'Product designer',h:200,skills:['Figma','Design systems','UX research'],cat:'Design',avail:'6 hrs/week · evenings IST',lang:'Telugu, English',
+  contrib:'Design the lesson flows and the first brand look.',tier:'Good skills complement',
+  why:['You asked for design help; Karthik has three education-product case studies.','Prefers small teams of 3–5 people.'],
+  lim:['Timezone overlap is evenings only.'],ev:[['3 case studies (education apps)','verified'],['Design system for a fintech startup','self']]},
+ {id:'anjali',name:'Anjali Rao',role:'Growth & community',h:30,skills:['Community','Content','Partnerships'],cat:'Growth',avail:'5 hrs/week · IST',lang:'Telugu, English, Hindi',
+  contrib:'Find the first 50 Telugu learners for a pilot.',tier:'Fills a gap in your team',
+  why:['Growth is the one capability your goals list but your circle lacks.','Attended 6 Telugu AI community sessions.'],
+  lim:['Limited technical background (by design for this role).'],ev:[['Grew a 2,000-member learning community','peer'],['Launch playbook (public doc)','self']]},
+ {id:'suresh',name:'Suresh Naidu',role:'ML engineer · speech & LLMs',h:150,skills:['Python','Speech','LLM evaluation'],cat:'AI',avail:'10 hrs/week · IST',lang:'Telugu, English',
+  contrib:'Evaluate Telugu speech and LLM quality for lessons.',tier:'Strong fit on skills',
+  why:['Your project needs Telugu speech quality; Suresh benchmarks it.','Both of you listed “Learning experiments” as a secondary goal.'],
+  lim:['Currently in 2 circles; capacity is limited.'],ev:[['Telugu ASR benchmark write-up','verified'],['Open-source eval scripts','verified']]},
+ {id:'divya',name:'Divya Sai',role:'Data analyst',h:0,skills:['SQL','Dashboards','Python'],cat:'Backend',avail:'6 hrs/week · IST',lang:'Telugu, English'},
+ {id:'vamsi',name:'Vamsi Krishna',role:'Backend developer',h:100,skills:['Laravel','MySQL','APIs'],cat:'Backend',avail:'7 hrs/week · IST',lang:'Telugu, English'},
+ {id:'meera',name:'Meera Iyer',role:'QA & user research',h:270,skills:['Testing','Interviews','Surveys'],cat:'Design',avail:'5 hrs/week · IST',lang:'Tamil, English, Telugu'},
+ {id:'harsha',name:'Harsha Vardhan',role:'Video & creator',h:50,skills:['Video','Storytelling','Social'],cat:'Growth',avail:'4 hrs/week · IST',lang:'Telugu, English'}
+];
+const M=id=>MEMBERS.find(m=>m.id===id);
+const OPPS=[
+ {id:'o1',goal:'career',title:'Founding engineer · EdTech startup',org:'Hyderabad · hybrid · verified listing',why:'Matches your Flutter + AI skills and your Career goal.',verified:true},
+ {id:'o2',goal:'startup',title:'Co-founder wanted · Telugu fintech',org:'Pre-seed · 2 founders so far',why:'Your Startup goal is your top weight; they need a technical co-founder.',verified:true},
+ {id:'o3',goal:'freelance',title:'Flutter app for an NGO · paid project',org:'6 weeks · ₹60k–80k',why:'Freelance is 15% of your goals; skills match.',verified:true},
+ {id:'o4',goal:'learning',title:'Open experiment · evaluating Telugu LLMs',org:'Community research group',why:'Fits your Learning goal and Suresh’s work.',verified:false}
+];
+const SESS=[
+ {id:'s1',title:'Build Session · Voice agents in Telugu',when:'Sat, 22 Nov · 7:00 PM IST',kind:'Build session',what:'Ship a working voice agent by the end of the session.',prereq:['Python 3.11 installed','A microphone','Starter repo cloned']},
+ {id:'s2',title:'Demo Night · Ship what you built',when:'Tue, 25 Nov · 8:00 PM IST',kind:'Demo night',what:'Two-minute demos from members. Get feedback on real work.',prereq:['One thing to show, however small']},
+ {id:'s3',title:'Workshop · Evaluating LLM outputs',when:'Sat, 29 Nov · 7:00 PM IST',kind:'Workshop',what:'Learn a lightweight evaluation loop for your project.',prereq:['An LLM project (any size)']}
+];
+const FEED=[
+ {m:'priya',t:'Shipped v0.3 of Kisan Mitra: offline crop-price alerts',b:'Moved sync to a background queue. Looking for feedback on conflict handling.',tag:'Flutter · Mobile'},
+ {m:'suresh',t:'Telugu speech benchmark: three open models compared',b:'Short write-up with the test set and scripts so you can reproduce it.',tag:'AI · Evaluation'},
+ {m:'karthik',t:'Redesigned a tutoring app’s onboarding in three iterations',b:'Case study with before/after and what the user tests changed.',tag:'Design · Case study'},
+ {m:'divya',t:'Looking for a frontend partner for a hackathon dashboard',b:'Data is ready; I need someone to build the UI over a weekend.',tag:'Looking for collaborators'},
+ {m:'harsha',t:'How I cut demo-video editing time in half',b:'Template and checklist you can reuse for your own demo.',tag:'Creator · Practical'}
+];
+const LOOPS={
+ home:{t:'Home · the macro-loop',job:'Show the one thing that matters now, then the rest in a fixed, finite order.',T:'A real pending reply, review, session or introduction.',A:'Open the one next action.',R:'A responsive teammate, visible progress or a relevant opportunity.',I:'Update goals, accept collaborations, contribute work.',N:'A genuine milestone, reply or session. Never “we miss you”.',G:'No fake tasks. Discovery is finite and ends with “You’re caught up”.',M:'weekly_meaningful_collaborators'},
+ onb:{t:'F01 · Builder Persona',job:'Turn an unknown member into an editable, useful matching profile.',T:'First authenticated entry after payment or signup.',A:'Answer a few essentials: role, skills, goals, availability, privacy.',R:'A readable persona summary and any real matching opportunities.',I:'Confirm or correct tags; add work samples.',N:'A completeness suggestion only when it unlocks something real.',G:'Never require phone, social handles or precise location. All inferred tags are editable.',M:'Profile completion · median onboarding time · matching consent rate'},
+ four:{t:'F03 · Find Your Four',job:'Offer four complementary, available introductions with distinct capabilities.',T:'Persona completion or a meaningful change in project direction.',A:'Review the four profiles and request introductions individually.',R:'A coherent, diverse team recommendation from consenting members.',I:'Express collaboration intent, accept or decline, add project goals.',N:'An acceptance, a formed circle, or a replacement after a real decline.',G:'Show fewer than four rather than fabricate. No percent scores. No automatic enrolment.',M:'Introduction acceptance · circles formed · day-14 activation'},
+ discover:{t:'F10 · Builder Feed + F11 · Search',job:'Help members discover useful projects, collaborators and lessons. Let them override recommendations.',T:'New work from followed people, or a specific skill gap.',A:'Inspect a project and leave substantive feedback, or ask to contribute.',R:'A technique learned, a project discovered, a helpful reply.',I:'Publish build updates, follow topics, save searches.',N:'A real reply or a relevant new build.',G:'Finite ranked feed, no infinite scroll. Never rank by outrage or raw reactions.',M:'Feed-to-collaboration conversion · useful feedback'},
+ circles:{t:'F05 · Builder Circles',job:'Give collaborators a shared home with accountability and continuity.',T:'A group invitation is accepted.',A:'Confirm objective, deliverables, ownership and cadence.',R:'A member takes ownership or moves a shared objective forward.',I:'Commit a role, schedule a milestone, acknowledge peers’ work.',N:'A teammate completes a deliverable or asks for input.',G:'2–5 people by default. No pressure to reach exactly five.',M:'Active circles · milestone completion · balanced contribution'},
+ missions:{t:'F06 · Build Missions',job:'Replace passive networking with a small, achievable real-world build.',T:'A circle is formed, a session starts, or a matching mission appears.',A:'Claim one deliverable, attach evidence, request review.',R:'Useful ideas, a successful integration, real tester feedback.',I:'Source links, prototypes, milestone notes, peer review.',N:'An actual review, dependency or agreed deadline.',G:'No fake countdowns or progress bars. A missed milestone triggers a supportive rescope.',M:'Verified milestones · shipped demos'},
+ sessions:{t:'F08 · Live Sessions',job:'Turn the membership’s live learning into collaboration and shipping.',T:'A relevant upcoming session, or an opt-in reminder.',A:'RSVP, join, claim an experiment, submit a demo.',R:'A new insight, a completed experiment, peer discovery.',I:'Save notes, code and the next build step.',N:'One follow-up task tied to what you built.',G:'RSVP is not attendance. Join links are revealed only to entitled members in the join window.',M:'Attendance-to-build conversion'},
+ messages:{t:'F04 · Connections & Messages',job:'Turn suitable introductions into meaningful two-way conversations.',T:'Someone accepts a request or sends a message.',A:'Send a context-aware first message.',R:'A useful reply, a meeting, a project invitation.',I:'Build conversation context, confirm working format.',N:'An actual reply, mention or agreed follow-up.',G:'No contact data by default. Block and report always reachable.',M:'Median time to first relevant reply'},
+ opps:{t:'F09 · Opportunities',job:'Turn demonstrated ability into opportunities that suit your goals.',T:'A new relevant, verified opportunity or a finished portfolio artifact.',A:'Inspect fit, express interest, apply or request an introduction.',R:'A real response, paid assignment, co-founder conversation or pilot.',I:'Tailor evidence, log outcomes.',N:'An actual response, not repeat reminders.',G:'Verify legitimacy. Introductions are not hiring guarantees. Contact data needs consent.',M:'Genuine replies · interviews · paid outcomes'},
+ passport:{t:'F07 · Builder Passport',job:'Make collaborative work visible and portable as professional proof.',T:'A contribution is accepted or a project ships.',A:'Publish a project story with role, artifact and outcome.',R:'Recognition, a credible reference, a relevant opportunity.',I:'Add evidence, request consensual team validation.',N:'A verified contribution or portfolio feedback.',G:'Always separate self-reported, peer-acknowledged and artifact-verified. No fabricated endorsements.',M:'Verified contributions per member'},
+ settings:{t:'F13 · Notifications & preferences',job:'Notify only when there is a helpful next action.',T:'A reply, mutual match, review request, real milestone or session you chose.',A:'Deep link straight to the exact conversation or task.',R:'A pending need resolved; progress unlocked.',I:'Set timing, channels and categories; mute what’s irrelevant.',N:'A genuinely high-relevance event; the rest goes to a digest.',G:'Default max 2 non-essential pushes/day, quiet hours, category opt-outs, no “we miss you”.',M:'Notification-to-qualified-action · mute and opt-out rate'},
+ membership:{t:'F14 · Membership & renewal',job:'Make paid value visible and manage the subscription transparently.',T:'Upcoming renewal, entitlement change or payment event.',A:'View plan, sessions, billing date; cancel or update payment.',R:'Predictable access and clearly shown value (not gamified).',I:'Billing preferences and optional feedback.',N:'A receipt or planned payment notice.',G:'No dark patterns, no hidden cancellation, no false “last chance”.',M:'Retained paying members · resolved payment failures'},
+ safety:{t:'F15 · Safety, moderation & control',job:'Make building with strangers safe and comfortable.',T:'An unwanted message, suspicious invitation or privacy concern.',A:'Block, report, leave, mute, restrict visibility, export or delete data.',R:'Predictable safety and restored control.',I:'Optional report evidence.',N:'Only a factual status update on your own report.',G:'Never paywalled, never gamified. Evidence handled discreetly.',M:'Response SLA · repeat-offender rate'}
+};
+
+/* ═════════ state ═════════ */
+const S={
+ lang:'en',banner:true,fourCount:4,
+ weights:{startup:45,career:30,freelance:15,learning:10},
+ four:Object.fromEntries(['priya','karthik','anjali','suresh'].map(i=>[i,'none'])),
+ queue:['divya','review','session'],
+ rsvp:{},saved:{},
+ tasks:[
+  {id:'t1',title:'Interview notes summary',who:'meera',st:'verified'},
+  {id:'t2',title:'Lesson API endpoints',who:'vamsi',st:'review'},
+  {id:'t3',title:'Voice lesson prototype UI',who:'me',st:'doing'},
+  {id:'t4',title:'Write pilot recruiting post',who:null,st:'todo'},
+  {id:'t5',title:'Telugu speech sample set',who:null,st:'todo'}],
+ circleTab:'Overview',settingsTab:'Goals',
+ conv:'meera',convOpen:0,
+ convs:{
+  meera:[{me:0,x:'Hi Ravi! I finished the interview summary. Want me to walk you through the top three pain points?'}],
+  vamsi:[{me:0,x:'Lesson API is ready for review. I added tests for the auth edge cases.'}],
+  circle:[{me:0,x:'Meera: Reminder, the team-agreed date for the prototype milestone is Friday.'},{me:1,x:'Thanks! I’ll post a demo clip once the UI is ready.'}]},
+ notifs:[{id:1,t:'Divya Sai wants to connect',s:'Introduction request',to:'#/home',unread:1},{id:2,t:'Vamsi requested your review',s:'Lesson API endpoints · Telugu Tutor AI',to:'#/missions',unread:1},{id:3,t:'Session reminder you set',s:'Voice agents in Telugu · Sat 7:00 PM',to:'#/sessions',unread:0}],
+ prefs:{msg:true,intro:true,mission:true,session:true,opp:false,digest:true},
+ quiet:'22:00–07:00',cap:2,
+ stories:[{id:'p1',t:'Kisan Mitra · offline-first prices',role:'Backend & sync',h:140,p:'verified',d:'Shipped to 300 farmers. Reviewed by 2 teammates.'},{id:'p2',t:'Telugu Meetup site',role:'Frontend',h:210,p:'peer',d:'Acknowledged by the organiser.'},{id:'p3',t:'Weekend hackathon: AI notes',role:'Full-stack',h:300,p:'self',d:'Built in 36 hours with 3 teammates.'}],
+ onb:{step:1,role:'',skills:['React','TypeScript','Laravel'],offer:'Web apps, APIs',seek:'Mobile, design, growth',consent:false,suggested:['AI product building','Telugu-language products']},
+ blocked:[{n:'Test Account 17',h:10}],
+ view:null
+};
+
+/* ═════════ routing ═════════ */
+const NAV=[['home','Home','home'],['four','Find Your Four','four'],['discover','Discover','compass'],['circles','Circles','circles'],['missions','Build Missions','build'],['sessions','Sessions','cal'],['messages','Messages','msg'],['opportunities','Opportunities','brief'],['passport','Builder Passport','pass']];
+const TABS=[['home','Home','home'],['discover','Discover','compass'],['circles','Build','build'],['messages','Inbox','msg'],['passport','Profile','user']];
+const badge={four:()=>Object.values(S.four).filter(v=>v==='accepted'||v==='declined-by').length||0,messages:()=>1,home:()=>S.queue.length,sessions:()=>0};
+function route(){const h=(location.hash||'#/home').replace(/^#\//,'');const [r,...rest]=h.split('/');return{r:r||'home',rest}}
+
+const PAGES={home:pageHome,four:pageFour,discover:pageDiscover,circles:pageCircles,missions:pageMissions,sessions:pageSessions,messages:pageMessages,opportunities:pageOpps,passport:pagePassport,settings:pageSettings,membership:pageMembership,safety:pageSafety,admin:pageAdmin};
+const LOOPKEY={home:'home',four:'four',discover:'discover',circles:'circles',missions:'missions',sessions:'sessions',messages:'messages',opportunities:'opps',passport:'passport',settings:'settings',membership:'membership',safety:'safety',admin:'sessions',onboarding:'onb'};
+
+function renderNav(){
+  const {r}=route();
+  $('#nav').innerHTML=NAV.map(([k,l,i])=>{const b=badge[k]?badge[k]():0;return`<a href="#/${k}" ${r===k||(k==='circles'&&false)?'aria-current="page"':''}>${ic(i)}<span>${esc(t(l))}</span>${b?`<span class="cnt" aria-label="${b} need attention">${b}</span>`:''}</a>`}).join('');
+  const bt=['circles','missions','sessions'].includes(r)?'circles':r;
+  $('#tabbar').innerHTML=TABS.map(([k,l,i])=>{const b=badge[k]?badge[k]():0;return`<a href="#/${k}" ${bt===k?'aria-current="page"':''}>${ic(i,22)}<span>${esc(t(l))}</span>${b?`<span class="cnt">${b}</span>`:''}</a>`}).join('');
+  const n=S.notifs.filter(x=>x.unread).length;const d=$('#ndot');d.hidden=!n;d.textContent=n;
+  $('#pop-notif').innerHTML=`<div class="row between" style="padding:6px 10px"><h2>Notifications</h2><button class="link" data-a="readall">Mark all read</button></div><p class="xs muted" style="padding:0 10px 8px">Only items you can act on. Everything else goes to your digest.</p>`+S.notifs.map(x=>`<a class="pop-i" href="${x.to}" data-a="go"><span style="width:8px;margin-top:8px"><i style="display:block;width:8px;height:8px;border-radius:50%;background:${x.unread?'var(--nc-accent)':'transparent'}"></i></span><span><b>${esc(x.t)}</b><br><span class="small muted">${esc(x.s)}</span></span></a>`).join('');
+}
+function buildSeg(r){return`<nav class="seg" aria-label="Build sections">${[['circles','Circles'],['missions','Missions'],['sessions','Sessions']].map(([k,l])=>`<a href="#/${k}" ${r===k?'aria-current="page"':''}>${l}</a>`).join('')}</nav>`}
+function view(){
+  const {r,rest}=route();
+  if(r==='onboarding'){document.body.classList.add('onb');renderOnb();document.title='Onboarding · Nightclub';return}
+  document.body.classList.remove('onb');
+  const fn=PAGES[r]||pageHome;
+  const out=fn(rest);
+  $('#main').innerHTML=`<div class="page ${out.rail?'':'norail'}"><div class="col">${['circles','missions','sessions'].includes(r)?buildSeg(r):''}${out.main}</div>${out.rail?`<aside class="rail" aria-label="Context">${out.rail}</aside>`:''}</div>`;
+  renderNav();document.title=`${out.title||'Nightclub'} · Nightclub prototype`;
+  $('#topsearch').style.display=matchMedia('(max-width:759px)').matches?'grid':'none';
+  if(out.after)out.after();
+}
+addEventListener('hashchange',()=>{view();scrollTo(0,0);$('#main').focus({preventScroll:true})});
+
+/* ═════════ pages ═════════ */
+function ph(title,sub,action){return`<header class="ph"><div><h1>${title}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div>${action||''}</header>`}
+function empty(h,p,btn){return`<div class="empty"><h3>${h}</h3><p class="small" style="max-width:46ch">${p}</p>${btn||''}</div>`}
+function topWeight(){return Object.entries(S.weights).sort((a,b)=>b[1]-a[1])[0]}
+function oppsSorted(){return [...OPPS].sort((a,b)=>S.weights[b.goal]-S.weights[a.goal])}
+function mileDone(){return 2+(S.tasks.find(x=>x.id==='t3').st==='verified'?1:0)}
+
+function nextAction(){
+  const q=S.queue[0];
+  if(q==='divya'){const m=M('divya');return`<div class="row" style="align-items:flex-start;gap:14px">${av(m.name,m.h,52)}<div class="grow stack-s"><p class="lead">${m.name} wants to connect</p><p class="muted">${m.role} · looking for a frontend partner for a hackathon dashboard. You both listed Startup and Learning as goals.</p><div class="row wrap" style="margin-top:6px"><button class="btn primary" data-a="accept-divya">Accept</button><button class="btn" data-a="decline-divya">Not now</button><button class="link" data-a="profile" data-id="divya">View profile</button></div></div></div>`}
+  if(q==='review')return`<div class="stack-s"><p class="lead">Vamsi requested your review</p><p class="muted">Lesson API endpoints · Telugu Tutor AI. The team agreed the review by Friday.</p><div class="row wrap" style="margin-top:6px"><button class="btn primary" data-a="review">Review now ${ic('arrow')}</button><a class="btn ghost" href="#/missions">Open mission board</a></div></div>`;
+  if(q==='session')return`<div class="stack-s"><p class="lead">${S.rsvp.s1?'You’re registered for Saturday’s build session':'Voice agents in Telugu is on Saturday'}</p><p class="muted">Sat 22 Nov · 7:00 PM IST. The join link appears 15 minutes before it starts.</p><div class="row wrap" style="margin-top:6px"><button class="btn primary" data-a="rsvp" data-id="s1">${S.rsvp.s1?'Registered · cancel':'RSVP'}</button><button class="btn ghost" data-a="skipq">Dismiss</button></div></div>`;
+  return`<div class="stack-s"><p class="lead">Nothing needs you right now</p><p class="muted">That’s the point. Update a goal if your priorities have changed, or browse the finite discovery list below.</p><div class="row wrap"><a class="btn" href="#/settings">Update my goals</a><a class="btn ghost" href="#/four">See Find Your Four</a></div></div>`;
+}
+function pageHome(){
+  const [tk,tv]=topWeight();const op=oppsSorted()[0];
+  const fourList=MEMBERS.slice(0,4).slice(0,S.fourCount);
+  const main=`
+  ${S.banner?`<div class="banner" role="note">${ic('info')}<div class="grow small"><b>Interactive prototype</b> of <code>13_REACT_WEB_APPLICATION.md</code>. All people and data are sample data. Try: accept an introduction → request your Four → claim a task → send a message. Use the <b>Hooked loop</b> button on any screen, the sun/moon icon for light and dark mode, <b>Palette</b> for colours, and the sliders icon for Telugu labels and empty states.</div><button class="ib" style="width:30px;height:30px" data-a="hidebanner" aria-label="Dismiss">${ic('x',16)}</button></div>`:''}
+  <header class="ph"><div><h1>${esc(t('Home'))}</h1><p class="sub">${S.queue.length?`${S.queue.length} thing${S.queue.length>1?'s':''} need${S.queue.length>1?'':'s'} you, oldest first. Nothing else is waiting.`:'You’re caught up. Nothing is waiting on you.'}</p></div><a class="btn ghost sm" href="#/onboarding">Replay onboarding</a></header>
+  <section class="card next" aria-label="Your next meaningful action"><p class="lbl" style="margin-bottom:8px">Your next meaningful action${S.queue.length>1?` · ${S.queue.length-1} more waiting`:''}</p>${nextAction()}</section>
+  <section class="card" aria-labelledby="h4"><div class="row between"><div><h2 id="h4">Find Your Four</h2><p class="small muted">Opt-in introductions. Nobody is added without a yes.</p></div><a class="link" href="#/four">See all</a></div>
+   <div class="row wrap" style="margin-top:14px;gap:16px">${fourList.length?fourList.map(m=>`<a href="#/four" style="text-decoration:none" class="row" aria-label="${m.name}, ${m.role}">${av(m.name,m.h,40,true)}<span><b class="small">${m.name.split(' ')[0]}</b><br><span class="xs muted">${stLabel(S.four[m.id])}</span></span></a>`).join(''):`<p class="small muted">No complementary members are available yet. We’ll tell you when someone relevant joins.</p>`}</div></section>
+  <section class="card" aria-labelledby="hb"><div class="row between"><h2 id="hb">Your active build</h2><a class="link" href="#/circles/telugu-tutor">Open circle</a></div>
+   <div class="row" style="margin-top:10px;gap:14px"><div class="grow stack-s"><b>Telugu Tutor AI</b><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="5" aria-valuenow="${mileDone()}" aria-label="Verified milestones"><i style="width:${mileDone()*20}%"></i></div><p class="small muted">${mileDone()} of 5 milestones verified. Progress only counts verified work.</p></div></div>
+   <hr class="hr" style="margin:12px 0"><p class="small"><b>Your next step:</b> ${S.tasks.find(x=>x.id==='t3').st==='verified'?'Pick the next task on the board.':'Finish the voice lesson prototype UI, then attach evidence for review.'}</p></section>
+  <section class="card" aria-labelledby="ho"><div class="row between"><h2 id="ho">A relevant opportunity</h2><a class="link" href="#/opportunities">See all</a></div>
+   <div class="stack-s" style="margin-top:8px"><div class="row wrap"><b>${op.title}</b>${op.verified?'<span class="chip ok">Verified listing</span>':''}</div><p class="small muted">${op.org}</p><p class="small">${ic('info',14)} Why you see this: ${S.lang==='en'?'':''}${GOALS[tk][0]} is your top goal (${tv}%). ${op.id===oppsSorted()[0].id?op.why:''}</p></div></section>
+  <section class="card" aria-labelledby="hs"><div class="row between"><h2 id="hs">Upcoming session</h2><a class="link" href="#/sessions">All sessions</a></div>
+   <div class="row between wrap" style="margin-top:10px"><div><b>${SESS[0].title}</b><p class="small muted">${SESS[0].when}</p></div><button class="btn ${S.rsvp.s1?'':'primary'} sm" data-a="rsvp" data-id="s1">${S.rsvp.s1?'Registered':'RSVP'}</button></div></section>
+  <section aria-labelledby="hd" class="stack-s"><h2 id="hd">Worth a look</h2>${FEED.slice(0,3).map(feedItem).join('')}<p class="caught">You’re caught up</p></section>`;
+  const rail=`<section class="card" aria-label="You"><div class="row">${av('Ravi Teja',250,48)}<div><b>Ravi Teja</b><p class="small muted">Full-stack developer · IST</p></div></div>
+   <hr class="hr" style="margin:12px 0"><p class="lbl" style="margin-bottom:8px">Your goal mix</p>${wbar()}<ul class="small muted" style="list-style:none;padding:0;margin:8px 0 0;display:grid;gap:2px">${Object.entries(S.weights).map(([k,v])=>`<li class="row between"><span>${GOALS[k][0]}</span><b style="color:var(--nc-text)">${v}%</b></li>`).join('')}</ul><a class="link small" href="#/settings" style="display:inline-block;margin-top:10px">Adjust goals</a></section>
+   <section class="card"><p class="lbl" style="margin-bottom:8px">This week</p><div class="grid2"><div class="stat"><b>${2+(mileDone()-2)}</b><span class="xs muted">verified collaboration actions</span></div><div class="stat"><b>${Object.values(S.four).filter(v=>v==='accepted').length+1}</b><span class="xs muted">active collaborators</span></div></div><p class="xs muted" style="margin-top:10px">Counts only evidence-backed actions. No streaks, no points.</p></section>`;
+  return{title:'Home',main,rail};
+}
+function wbar(){return`<div class="wbar" role="img" aria-label="Goal weights">${Object.keys(GOALS).map(k=>`<i class="${GOALS[k][1]}" style="width:${S.weights[k]}%"></i>`).join('')}</div>`}
+function feedItem(f){const m=M(f.m);return`<article class="card feedcard flat">${av(m.name,m.h,40)}<div class="grow stack-s"><div class="row between wrap"><span><b>${m.name}</b> <span class="small muted">· ${m.role}</span></span><span class="chip">${f.tag}</span></div><h3>${f.t}</h3><p class="small muted">${f.b}</p><div class="row wrap"><button class="btn sm" data-a="feedback" data-id="${f.m}">Give feedback</button><button class="btn sm ghost" data-a="save" data-id="${f.m}">${S.saved[f.m]?'Saved ':'Save'}</button><button class="btn sm ghost" data-a="contribute" data-id="${f.m}">Ask to contribute</button></div></div></article>`}
+
+function stLabel(s){return({none:'Not requested',requested:'Requested',accepted:'Connected',declined:'Dismissed','declined-by':'Declined','saved':'Saved'})[s]||s}
+function pageFour(){
+  const list=MEMBERS.slice(0,4).slice(0,S.fourCount);
+  const caps=[['Web','ok','You'],['Mobile','priya'],['Design','karthik'],['Growth','anjali'],['AI / speech','suresh']];
+  const cov=caps.map(([c,k,y])=>{if(y)return`<span class="chip ok">${c} · you</span>`;const s=S.four[k];if(S.fourCount<4&&!list.find(m=>m.id===k))return`<span class="chip">${c} · open</span>`;return s==='accepted'?`<span class="chip ok">${c} · ${M(k).name.split(' ')[0]}</span>`:s==='requested'?`<span class="chip warn">${c} · pending</span>`:`<span class="chip">${c} · open</span>`}).join('');
+  const reqd=list.filter(m=>['requested','accepted'].includes(S.four[m.id])).length;
+  const cards=list.map(m=>{const s=S.four[m.id];return`<article class="card pcard" aria-label="${m.name}">
+   <div class="row" style="align-items:flex-start">${av(m.name,m.h,48)}<div class="grow"><h3>${m.name}</h3><p class="small muted">${m.role}</p></div><span class="chip ${s==='accepted'?'ok':s==='requested'?'warn':s==='declined-by'?'bad':''}">${stLabel(s)}</span></div>
+   <div class="skills">${m.skills.map(x=>`<span class="chip">${x}</span>`).join('')}</div>
+   <p class="xs muted">${ic('clock',13)} ${m.avail} · ${m.lang}</p>
+   <div class="contrib"><b>What they could contribute</b>${m.contrib}</div>
+   <div class="row wrap"><span class="chip acc">${m.tier}</span><button class="link small" data-a="why" data-id="${m.id}">Why this match?</button></div>
+   ${s==='none'||s==='saved'?`<div class="row wrap"><button class="btn primary" data-a="req" data-id="${m.id}">Request introduction</button><button class="btn ghost sm" data-a="save4" data-id="${m.id}">${s==='saved'?'Saved ':'Save'}</button><button class="btn ghost sm" data-a="notnow" data-id="${m.id}">Not now</button></div>`:''}
+   ${s==='requested'?`<p class="small muted">Request sent. We’ll tell you when ${m.name.split(' ')[0]} replies.</p><div class="row wrap xs"><span class="muted">Prototype: simulate their reply →</span><button class="btn sm" data-a="sim" data-id="${m.id}" data-v="accepted">Accepts</button><button class="btn sm" data-a="sim" data-id="${m.id}" data-v="declined-by">Declines</button></div>`:''}
+   ${s==='accepted'?`<div class="row"><a class="btn primary" href="#/messages" data-a="openconv" data-id="${m.id}">Message ${m.name.split(' ')[0]}</a></div>`:''}
+   ${s==='declined-by'?`<p class="small muted">${m.name.split(' ')[0]} isn’t available right now. A replacement is suggested because of a real decline, never silently swapped in.</p><div class="row"><button class="btn sm" data-a="replace" data-id="${m.id}">See suggestion: ${m.id==='anjali'?'Harsha Vardhan':m.id==='priya'?'Vamsi Krishna':'Meera Iyer'}</button></div>`:''}
+   ${s==='declined'?`<p class="small muted">Thanks, this helps refine your future suggestions.</p><button class="btn ghost sm" data-a="undo4" data-id="${m.id}">Undo</button>`:''}
+  </article>`}).join('');
+  const main=`${ph(t('Find Your Four'),'Four complementary people who are available and opted in. Request each introduction yourself, or propose a circle together.',`<button class="btn primary" data-a="propose" ${reqd<1?'disabled title="Request at least one introduction first"':''}>Propose a circle</button>`)}
+   <section class="card flat" aria-label="Team coverage"><div class="row between wrap"><h2>Team coverage</h2><span class="xs muted">${list.length} of 4 suggestions available</span></div><div class="cover" style="margin-top:10px">${cov}</div><p class="xs muted" style="margin-top:10px">Coverage is based on skills people say they offer. It is not a prediction of success.</p></section>
+   ${list.length?`<div class="grid2">${cards}</div>`:empty('No complementary members are available yet','We show fewer than four rather than inventing matches. We’ll notify you when someone relevant joins, and you can search members yourself in the meantime.','<a class="btn primary" href="#/discover">Search members</a>')}
+   ${list.length&&list.length<4?`<div class="banner" role="note">${ic('info')}<p class="small">Only ${list.length} suggestion${list.length>1?'s':''} right now. We’ll tell you when someone else relevant joins.</p></div>`:''}
+   ${list.length?'<p class="caught">That’s everyone for now</p>':''}`;
+  const rail=`<section class="card flat"><h2>How we pick</h2><ul class="small muted" style="padding-left:18px;display:grid;gap:6px;margin-top:8px"><li>Only members who opted in and are available.</li><li>Distinct skills, not four copies of the same person.</li><li>Nobody blocked by anyone else.</li><li>You can decline anyone, any time.</li></ul></section><section class="card flat"><h2>No scores</h2><p class="small muted" style="margin-top:6px">We never show “96% match”. Matches carry a plain-language reason and the limits we know about.</p></section>`;
+  return{title:'Find Your Four',main,rail};
+}
+function pageDiscover(){
+  const main=`${ph(t('Discover'),'Finite, ranked, and useful. Search with intent, or browse what people are building.')}
+  <div class="tabs" role="tablist" aria-label="Discover">${['For you','Search','Opportunities'].map((x,i)=>`<button role="tab" aria-selected="${(S.dtab||'For you')===x}" data-a="dtab" data-id="${x}">${x}</button>`).join('')}</div>
+  <div id="dbody"></div>`;
+  return{title:'Discover',main,rail:'',after(){dbody()}};
+}
+function dbody(){
+  const tab=S.dtab||'For you';const el=$('#dbody');if(!el)return;
+  if(tab==='For you')el.innerHTML=`<div class="stack">${FEED.map(feedItem).join('')}<p class="caught">You’re caught up</p><p class="small muted" style="text-align:center">No infinite scroll here. New builds will appear when there is something worth seeing.</p></div>`;
+  if(tab==='Search')el.innerHTML=`<div class="stack"><label class="f">Search members<input id="q" type="search" placeholder="Skill, role or goal, e.g. Flutter" value="${esc(S.q||'')}" autocomplete="off"></label><div class="row wrap" id="cats">${['All','Mobile','Design','Growth','AI','Backend'].map(c=>`<button class="chip" aria-pressed="${(S.cat||'All')===c}" data-a="cat" data-id="${c}">${c}</button>`).join('')}</div><div id="results" class="stack-s" aria-live="polite"></div></div>`,results();
+  if(tab==='Opportunities')el.innerHTML=oppsBody();
+}
+function results(){
+  const q=(S.q||'').toLowerCase(),c=S.cat||'All';
+  const r=MEMBERS.filter(m=>(c==='All'||m.cat===c)&&(!q||(m.name+m.role+m.skills.join(' ')).toLowerCase().includes(q)));
+  $('#results').innerHTML=r.length?r.map(m=>`<article class="card flat row" style="align-items:flex-start">${av(m.name,m.h,44)}<div class="grow"><b>${m.name}</b> <span class="small muted">· ${m.role}</span><div class="row wrap" style="margin-top:6px;gap:6px">${m.skills.map(x=>`<span class="chip">${x}</span>`).join('')}</div><p class="xs muted" style="margin-top:6px">${m.avail}</p></div><button class="btn sm" data-a="profile" data-id="${m.id}">View profile</button></article>`).join('')+`<p class="caught">${r.length} result${r.length>1?'s':''}</p>`:empty('No members match yet','Try fewer filters, or save this search and we’ll tell you when someone relevant joins.',`<button class="btn" data-a="savesearch">Save this search</button>`);
+}
+function oppsBody(){
+  const f=S.ofilter||'all';const list=oppsSorted().filter(o=>f==='all'||o.goal===f);
+  return`<div class="stack"><div class="row wrap" role="group" aria-label="Filter by goal"><button class="chip" aria-pressed="${f==='all'}" data-a="ofilter" data-id="all">All goals</button>${Object.entries(GOALS).map(([k,[l]])=>`<button class="chip" aria-pressed="${f===k}" data-a="ofilter" data-id="${k}">${l} · ${S.weights[k]}%</button>`).join('')}</div>
+  <p class="small muted">Sorted by your goal weights. Change them in <a class="link" href="#/settings">Settings</a>.</p>
+  ${list.map(o=>`<article class="card flat stack-s"><div class="row between wrap"><h3>${o.title}</h3><span class="row">${o.verified?'<span class="chip ok">Verified listing</span>':'<span class="chip warn">Community experiment</span>'}<span class="chip">${GOALS[o.goal][0]}</span></span></div><p class="small muted">${o.org}</p><p class="small"><b>Why it fits:</b> ${o.why}</p><div class="row wrap"><button class="btn primary sm" data-a="opp" data-id="${o.id}">View details</button><button class="btn sm ghost" data-a="save" data-id="${o.id}">${S.saved[o.id]?'Saved ':'Save'}</button></div></article>`).join('')}<p class="caught">You’re caught up</p></div>`;
+}
+function pageOpps(){return{title:'Opportunities',main:ph(t('Opportunities'),'Startup, jobs, freelance and early customers, ranked by the goals you set.')+`<div id="obody">${oppsBody()}</div>`,rail:`<section class="card flat"><h2>Good to know</h2><ul class="small muted" style="padding-left:18px;display:grid;gap:6px;margin-top:8px"><li>Introductions are not hiring guarantees.</li><li>Companies only see your contact details if you choose to share them.</li><li>We verify listings; unverified ones are labelled.</li></ul></section>`}}
+
+function pageCircles(rest){
+  if(rest[0]==='telugu-tutor')return circleDetail();
+  const main=`${ph(t('Circles'),'A shared home for people building something together. Two to five people by default.',`<button class="btn primary" data-a="propose2">Start a circle</button>`)}
+  <article class="card"><div class="row between wrap"><div class="row">${[['Ravi Teja',250],['Meera Iyer',270],['Vamsi Krishna',100]].map(([n,h],i)=>`<span style="margin-left:${i?-10:0}px">${av(n,h,38)}</span>`).join('')}<div style="margin-left:6px"><h2>Telugu Tutor AI</h2><p class="small muted">3 members · Active · ${mileDone()} of 5 milestones verified</p></div></div><a class="btn" href="#/circles/telugu-tutor">Open circle</a></div></article>
+  ${S.inv!=='done'?`<article class="card flat"><p class="lbl">Invitation</p><div class="row between wrap" style="margin-top:6px"><div><h3>Hackathon Dashboard Team</h3><p class="small muted">Invited by Divya Sai · 3 people · weekend build</p></div><div class="row"><button class="btn primary sm" data-a="inv" data-id="join">Join</button><button class="btn sm" data-a="inv" data-id="no">Decline</button></div></div></article>`:''}`;
+  return{title:'Circles',main,rail:`<section class="card flat"><h2>Your choice</h2><p class="small muted" style="margin-top:6px">You can leave any circle, any time, without penalty. There’s no pressure to reach five members or to accept more work than you have time for.</p></section>`};
+}
+function circleDetail(){
+  const tabs=['Overview','Chat','Members'];const tab=S.circleTab;
+  let body='';
+  if(tab==='Overview')body=`<div class="stack"><section class="card flat"><h3>Objective</h3><p class="muted" style="margin-top:4px">Build a Telugu-first voice tutor and pilot it with 10 real learners.</p><dl class="kv" style="margin-top:12px"><dt>Cadence</dt><dd>Weekly check-in · Thursdays 8:00 PM</dd><dt>Next milestone</dt><dd>Voice lesson prototype · team-agreed Friday</dd><dt>Norms</dt><dd>Reply within 24 hours · kind, specific feedback</dd></dl></section><a class="btn" href="#/missions">Open mission board ${ic('arrow')}</a></div>`;
+  if(tab==='Chat')body=`<section class="card flat stack-s">${S.convs.circle.map(m=>`<div class="bub ${m.me?'me':''}">${esc(m.x)}</div>`).join('')}<form data-form="circlechat" class="row" style="margin-top:8px"><input type="text" name="m" placeholder="Message the circle" aria-label="Message the circle" required><button class="btn primary">Send</button></form></section>`;
+  if(tab==='Members')body=`<div class="grid2">${[['Ravi Teja',250,'Full-stack · You','Owner of voice lesson UI'],['Meera Iyer',270,'QA & user research','Owns interviews & testing'],['Vamsi Krishna',100,'Backend','Owns lesson API']].map(([n,h,r,o])=>`<article class="card flat row">${av(n,h,44)}<div><b>${n}</b><p class="small muted">${r}</p><p class="xs">${o}</p></div></article>`).join('')}</div><p class="small muted">Contribution is shown as balance across roles, not a ranking.</p>`;
+  return{title:'Telugu Tutor AI',main:`${ph('Telugu Tutor AI','Active circle · 3 members','<button class="btn danger sm" data-a="leave">Leave circle</button>')}<div class="tabs" role="tablist">${tabs.map(x=>`<button role="tab" aria-selected="${tab===x}" data-a="ctab" data-id="${x}">${x}</button>`).join('')}</div>${body}`,rail:''};
+}
+function pageMissions(){
+  const cols=[['todo','To do'],['doing','In progress'],['review','In review'],['verified','Verified']];
+  const ms=[['Problem interviews',1],['Clickable prototype',1],['Voice lesson prototype',S.tasks.find(x=>x.id==='t3').st==='verified'],['Pilot with 10 learners',0],['Public demo',0]];
+  const first=ms.findIndex(x=>!x[1]);
+  const main=`${ph(t('Build Missions'),'Telugu Tutor AI · claim a deliverable, attach evidence, get it verified.')}
+  <section class="card" aria-label="Milestones"><div class="row between wrap" style="margin-bottom:12px"><h2>Milestones</h2><span class="small muted">${mileDone()} of 5 verified · progress counts verified work only</span></div><ol class="steps">${ms.map((m,i)=>`<li class="${m[1]?'done':i===first?'now':''}"><b>${m[0]}</b><span class="muted">${m[1]?'Verified':i===first?'In progress':'Upcoming'}</span></li>`).join('')}</ol>
+  ${S.tasks.find(x=>x.id==='t3').st!=='verified'?`<div class="banner" style="margin-top:14px">${ic('info')}<div class="grow small"><b>Voice lesson prototype</b> was agreed for Friday and it’s slipping. That’s okay. Want to adjust the plan together?<div style="margin-top:8px"><button class="btn sm" data-a="rescope">Adjust the plan</button></div></div></div>`:''}</section>
+  <div class="board">${cols.map(([k,l])=>{const ts=S.tasks.filter(x=>x.st===k);return`<section class="col-b" aria-label="${l}"><h3>${l}<span>${ts.length}</span></h3>${ts.map(x=>{const o=x.who==='me'?{name:'You',h:250}:x.who?M(x.who):null;return`<article class="task"><b>${x.title}</b><div class="row">${o?`${av(o.name==='You'?'Ravi Teja':o.name,o.h,24)}<span class="xs muted">${o.name==='You'?'You':o.name.split(' ')[0]}</span>`:'<span class="xs muted">Unassigned</span>'}</div>${x.st==='todo'?`<button class="btn sm primary" data-a="claim" data-id="${x.id}">Claim this</button>`:''}${x.st==='doing'&&x.who==='me'?`<button class="btn sm primary" data-a="evidence" data-id="${x.id}">Submit evidence</button>`:''}${x.st==='review'&&x.who!=='me'?`<button class="btn sm primary" data-a="review" data-id="${x.id}">Review</button>`:''}${x.st==='review'&&x.who==='me'?`<span class="xs muted">Waiting for peer review.</span><button class="btn sm" data-a="simreview" data-id="${x.id}">Prototype: simulate approval</button>`:''}${x.st==='verified'?`<span class="prov verified">${ic('check')}Verified</span>`:''}</article>`}).join('')||'<p class="xs muted">Nothing here.</p>'}</section>`}).join('')}</div>`;
+  return{title:'Build Missions',main,rail:''};
+}
+function pageSessions(){
+  const used=3;
+  const main=`${ph(t('Sessions'),'Live learning that turns into building.')}
+  <section class="card flat row between wrap"><div><b>3 of 8 included sessions used this month</b><p class="small muted">The monthly number is set by admins. Renews 3 Dec.</p></div><div style="width:200px"><div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="8" aria-valuenow="${used}" aria-label="Sessions used"><i style="width:${used/8*100}%"></i></div></div></section>
+  <div class="stack">${SESS.map(s=>`<article class="card"><div class="row between wrap"><div class="stack-s"><span class="chip acc" style="align-self:flex-start">${s.kind}</span><h2>${s.title}</h2><p class="small muted">${ic('clock',14)} ${s.when}</p><p class="small">${s.what}</p></div><div class="stack-s" style="align-items:flex-end"><button class="btn ${S.rsvp[s.id]?'':'primary'}" data-a="rsvp" data-id="${s.id}">${S.rsvp[s.id]?'Registered':'RSVP'}</button><button class="link small" data-a="sess" data-id="${s.id}">Details &amp; prep</button></div></div></article>`).join('')}</div>
+  <section class="card flat"><h2>Past sessions</h2><div class="stack-s" style="margin-top:8px"><div class="row between wrap"><div><b>Prompting for builders</b><p class="small muted">Resources and your saved notes</p></div><button class="btn sm" data-a="notes">Open my notes</button></div></div></section>`;
+  return{title:'Sessions',main,rail:`<section class="card flat"><h2>RSVP ≠ attendance</h2><p class="small muted" style="margin-top:6px">We record attendance separately, so registering never counts as showing up.</p></section>`};
+}
+function pageMessages(){
+  const convs=[{id:'meera',n:'Meera Iyer',h:270,sub:'Circle teammate'},{id:'vamsi',n:'Vamsi Krishna',h:100,sub:'Circle teammate'},{id:'circle',n:'Telugu Tutor AI',h:250,sub:'Circle chat'},...Object.keys(S.convs).filter(k=>!['meera','vamsi','circle'].includes(k)).map(k=>({id:k,n:M(k).name,h:M(k).h,sub:'Connected'}))];
+  const cur=convs.find(c=>c.id===S.conv)||convs[0];const msgs=S.convs[cur.id]||[];
+  const main=`${ph(t('Messages'),'In-app only. Accepting a connection never shares your phone or email.')}
+  <section class="card msgs" data-open="${S.convOpen}" aria-label="Messages"><div class="clist" role="list">${convs.map(c=>{const last=(S.convs[c.id]||[]).slice(-1)[0];return`<button class="crow" role="listitem" data-a="conv" data-id="${c.id}" ${c.id===cur.id?'aria-current="true"':''}>${av(c.n,c.h,38)}<span class="grow"><b class="small">${c.n}</b><br><span class="xs muted" style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${last?esc(last.x):c.sub}</span></span></button>`}).join('')}</div>
+  <div class="thread"><header><button class="btn ghost sm mback" data-a="mback">← Back</button>${av(cur.n,cur.h,34)}<div class="grow"><b>${cur.n}</b><p class="xs muted">${cur.sub}</p></div><button class="btn ghost sm" popovertarget="pop-chat">More</button></header>
+  <div class="tmsgs" id="tmsgs">${msgs.length?msgs.map(m=>`<div class="bub ${m.me?'me':''}">${esc(m.x)}</div>`).join(''):`<div class="empty" style="margin:auto"><h3>Start with context</h3><p class="small">Pick a starter or write your own. Nothing is sent until you press send.</p></div>`}</div>
+  ${!msgs.length?`<div class="starters">${['Hi! I saw your work. What are you building next?','I’m free about 6 hrs/week. How about you?','Want to hop on a 20-min call this week?'].map(x=>`<button class="chip" data-a="starter" data-id="${esc(x)}">${esc(x)}</button>`).join('')}</div>`:''}
+  <form class="comp" data-form="chat"><textarea name="m" rows="1" placeholder="Write a message" aria-label="Message" required></textarea><button class="btn primary" aria-label="Send">${ic('send')}</button></form></div></section>
+  <div popover id="pop-chat" style="top:auto;right:auto;position:fixed;inset:auto 24px auto auto;margin-top:120px"><button class="pop-i" data-a="mute">Mute conversation</button><button class="pop-i" data-a="profile" data-id="${cur.id}">View profile</button><button class="pop-i" data-a="report" style="color:var(--nc-danger)">Report</button><button class="pop-i" data-a="block" style="color:var(--nc-danger)">Block</button></div>`;
+  return{title:'Messages',main,rail:'',after(){const t=$('#tmsgs');if(t)t.scrollTop=t.scrollHeight}};
+}
+function pagePassport(){
+  const draft=S.tasks.find(x=>x.id==='t3').st==='verified'&&!S.stories.find(s=>s.id==='draft');
+  const main=`${ph(t('Builder Passport'),'Proof of work you can carry anywhere. Every claim shows how it was verified.',`<button class="btn primary" data-a="publish">Publish a story</button>`)}
+  <section class="card"><div class="row wrap" style="gap:18px">${av('Ravi Teja',250,64)}<div class="grow"><h2>Ravi Teja</h2><p class="muted">Full-stack developer · building Telugu-first learning tools</p><div class="row wrap" style="margin-top:8px">${['React','TypeScript','Laravel','Flutter (learning)'].map(x=>`<span class="chip">${x}</span>`).join('')}</div></div><div class="row" style="gap:22px"><div class="stat"><b>${S.stories.filter(s=>s.p==='verified').length+(mileDone()-2)}</b><span class="xs muted">verified</span></div><div class="stat"><b>${S.stories.filter(s=>s.p==='peer').length}</b><span class="xs muted">peer-ack.</span></div><div class="stat"><b>${S.stories.filter(s=>s.p==='self').length}</b><span class="xs muted">self-reported</span></div></div></div></section>
+  <div class="row wrap xs muted">Legend: ${prov('verified')} artifact checked · ${prov('peer')} a teammate confirmed · ${prov('self')} you said so</div>
+  <div class="grid3">${draft?`<article class="card story draft"><div class="thumb" style="--h:250">Voice lesson prototype</div><span class="chip warn" style="align-self:flex-start">Draft from verified milestone</span><p class="small muted">Your team verified this milestone. Add your story to share it.</p><button class="btn primary sm" data-a="publish" data-id="draft">Finish &amp; publish</button></article>`:''}${S.stories.map(s=>`<article class="card story"><div class="thumb" style="--h:${s.h}">${s.t}</div><div class="row between wrap"><b class="small">${s.role}</b>${prov(s.p)}</div><p class="small muted">${s.d}</p></article>`).join('')}</div>`;
+  return{title:'Builder Passport',main,rail:`<section class="card flat"><h2>Visibility</h2><p class="small muted" style="margin-top:6px">Each story can be private, members-only or a public link. Never share confidential client work.</p></section>`};
+}
+function pageSettings(){
+  const tabs=['Goals','Notifications','Privacy','Appearance','Your data'];const tab=S.settingsTab;let body='';
+  if(tab==='Goals')body=`<section class="card stack"><div><h2>Your goals</h2><p class="small muted">Weights always add up to 100%. Recommendations adapt to what you’re doing, and we never rewrite your goals from clicks.</p></div>${weightsUI()}</section>`;
+  if(tab==='Notifications'){const P=S.prefs;const row=(k,l,d)=>`<label class="row between" style="gap:20px;padding:10px 0;border-bottom:1px solid var(--nc-border)"><span><b>${l}</b><br><span class="small muted">${d}</span></span><input class="sw" type="checkbox" role="switch" data-pref="${k}" ${P[k]?'checked':''}></label>`;
+   body=`<section class="card"><h2>What should interrupt you?</h2>${row('msg','Messages','Replies from people you’ve connected with.')}${row('intro','Introductions','Requests and acceptances.')}${row('mission','Missions & reviews','Reviews requested and milestones verified.')}${row('session','Session reminders','Only for sessions you RSVP to.')}${row('opp','Opportunities','Only strong, verified fits. Off by default.')}${row('digest','Weekly digest','Everything lower-priority, in one email.')}<label class="row between" style="gap:20px;padding:10px 0;opacity:.8"><span><b>Security &amp; billing</b><br><span class="small muted">Always on. These are never promotional.</span></span><input class="sw" type="checkbox" role="switch" checked disabled></label></section><section class="card stack-s"><h2>Limits</h2><dl class="kv"><dt>Non-essential pushes</dt><dd>Max ${S.cap} per day</dd><dt>Quiet hours</dt><dd>${S.quiet} (your timezone, IST)</dd></dl></section>`}
+  if(tab==='Privacy')body=`<section class="card stack"><h2>What others can see</h2>${[['Show me in Find Your Four','Lets matching suggest you to others.',1],['Show me in member search','People can find you by skill.',1],['Allow introduction requests','Turn off to pause new requests.',1]].map(([l,d,c])=>`<label class="row between" style="gap:20px"><span><b>${l}</b><br><span class="small muted">${d}</span></span><input class="sw" type="checkbox" role="switch" ${c?'checked':''}></label>`).join('')}<p class="small muted">Phone, email and exact location are never shown unless you choose to share after connecting.</p></section>`;
+  if(tab==='Appearance')body=`<section class="card stack"><h2>Appearance</h2><div class="row wrap" role="group" aria-label="Theme">${['system','light','dark'].map(x=>`<button class="chip" aria-pressed="${(document.documentElement.dataset.theme||'system')===x}" data-a="theme" data-id="${x}">${x[0].toUpperCase()+x.slice(1)}</button>`).join('')}</div><h3>Language</h3><div class="row wrap" role="group" aria-label="Language">${[['en','English'],['te','తెలుగు (sample)']].map(([k,l])=>`<button class="chip" aria-pressed="${S.lang===k}" data-a="lang" data-id="${k}">${l}</button>`).join('')}</div><p class="xs muted">Telugu labels here are a layout test; real copy needs a native-speaker review.</p></section>`;
+  if(tab==='Your data')body=`<section class="card stack"><h2>Your data</h2><p class="small muted">Export or delete your data any time. This is never behind a paywall.</p><div class="row wrap"><button class="btn" data-a="export">Export my data</button><button class="btn danger" data-a="delacct">Delete my account…</button></div></section>`;
+  return{title:'Settings',main:`${ph(t('Settings'))}<div class="tabs" role="tablist">${tabs.map(x=>`<button role="tab" aria-selected="${tab===x}" data-a="stab" data-id="${x}">${x}</button>`).join('')}</div>${body}`,rail:''};
+}
+function weightsUI(){return`<div class="stack" data-weights>${wbar()}${Object.keys(GOALS).map(k=>`<div class="wrow"><label for="w-${k}"><b class="small">${GOALS[k][0]}</b></label><input id="w-${k}" type="range" min="0" max="100" step="1" value="${S.weights[k]}" data-w="${k}" aria-label="${GOALS[k][0]}"><output data-wout="${k}">${S.weights[k]}%</output></div>`).join('')}<div class="row wrap"><span class="xs muted">Presets:</span>${[['Mostly startup',{startup:60,career:15,freelance:10,learning:15}],['Mostly career',{startup:10,career:60,freelance:20,learning:10}],['Balanced',{startup:25,career:25,freelance:25,learning:25}]].map(([l,w])=>`<button class="chip" data-a="preset" data-w='${JSON.stringify(w)}'>${l}</button>`).join('')}<span class="chip ok" style="margin-left:auto">Total 100%</span></div></div>`}
+function setWeight(k,v){const W=S.weights,keys=Object.keys(W),others=keys.filter(x=>x!==k);v=Math.max(0,Math.min(100,+v));const rest=100-v,sum=others.reduce((a,x)=>a+W[x],0);const out={};others.forEach(x=>out[x]=sum?Math.round(W[x]/sum*rest):Math.round(rest/others.length));const diff=rest-others.reduce((a,x)=>a+out[x],0);const big=others.sort((a,b)=>out[b]-out[a])[0];out[big]=Math.max(0,out[big]+diff);out[k]=v;Object.assign(W,out);syncW()}
+function syncW(){$$('[data-w]').forEach(i=>i.value=S.weights[i.dataset.w]);$$('[data-wout]').forEach(o=>o.textContent=S.weights[o.dataset.wout]+'%');$$('.wbar').forEach(b=>b.innerHTML=Object.keys(GOALS).map(k=>`<i class="${GOALS[k][1]}" style="width:${S.weights[k]}%"></i>`).join(''))}
+function pageMembership(){return{title:'Membership',main:`${ph('Membership','Your plan, in plain sight.')}
+  <section class="card stack"><div class="row between wrap"><div><h2>Nightclub Member · Monthly</h2><p class="small muted">Includes 8 paid build sessions a month (set by admins)</p></div><span class="chip ok">Active</span></div><dl class="kv"><dt>Next billing</dt><dd>3 Dec 2026</dd><dt>Payment</dt><dd>UPI · ••• 42</dd><dt>Sessions used</dt><dd>3 of 8</dd></dl><div class="row wrap"><button class="btn" data-a="pay">Update payment method</button><button class="btn danger" data-a="cancel">Cancel membership</button></div></section>
+  <section class="card flat"><h2>Receipts</h2><div class="stack-s" style="margin-top:8px">${['3 Nov 2026','3 Oct 2026'].map(d=>`<div class="row between"><span>${d} · Monthly membership</span><button class="link">Download</button></div>`).join('')}</div></section>`,rail:`<section class="card flat"><h2>Fair by design</h2><p class="small muted" style="margin-top:6px">Cancel in the same place, in the same number of steps as signing up. No guilt copy, no fake “last chance”.</p></section>`}}
+function pageSafety(){return{title:'Safety & privacy',main:`${ph('Safety &amp; privacy','Always available. Never behind a paywall.')}
+  <div class="grid2"><section class="card stack-s"><h2>Report something</h2><p class="small muted">A member, message or circle.</p><button class="btn primary" data-a="report">Report…</button></section><section class="card stack-s"><h2>Your report status</h2><p class="small muted">No open reports.</p><p class="xs muted">When you report, we only send factual status updates about it.</p></section></div>
+  <section class="card stack-s"><h2>Blocked members</h2>${S.blocked.length?S.blocked.map((b,i)=>`<div class="row between"><span class="row">${av(b.n,b.h,32)}${b.n}</span><button class="btn sm" data-a="unblock" data-id="${i}">Unblock</button></div>`).join(''):'<p class="small muted">You haven’t blocked anyone.</p>'}</section>
+  <section class="card stack-s"><h2>Your data</h2><div class="row wrap"><button class="btn" data-a="export">Export my data</button><button class="btn danger" data-a="delacct">Delete my account…</button></div></section>`,rail:''}}
+function pageAdmin(){return{title:'Admin',main:`${ph('Admin (role-gated)','A minimal v1 view. Full spec lives in 14_ADMIN_MODERATION_ANALYTICS_AND_TESTING.md')}
+  <section class="card stack"><h2>Session reminder · delivery</h2><p class="small muted">Sent is never shown as delivered.</p><div class="grid3">${[['Targeted',212],['Queued',212],['Sent',198],['Delivered',171],['Failed',9],['Skipped',5]].map(([l,n])=>`<div class="card flat stat"><b>${n}</b><span class="xs muted">${l}</span></div>`).join('')}</div></section>
+  <section class="card stack-s"><h2>Included sessions per month</h2><label class="f" style="max-width:220px">Value (configurable)<input type="text" value="8" inputmode="numeric" aria-label="Sessions per month"></label><p class="xs muted">Not hard-coded; changes apply on the next billing cycle.</p></section>
+  <section class="card stack-s"><h2>Match review queue</h2><div class="row between"><span>Priya Reddy ↔ Ravi Teja · flagged for manual review</span><button class="btn sm" data-a="toastok" data-id="Marked reviewed">Mark reviewed</button></div></section>`,rail:''}}
+
+/* ═════════ onboarding ═════════ */
+function renderOnb(){
+  const o=S.onb,st=o.step,N=5;let body='';
+  if(st===1)body=`<h1>What do you do best?</h1><p class="muted">A few essentials so we can introduce you to the right people. You can change everything later.</p>
+   <label class="f">Your role<select name="role" required><option value="">Choose a role</option>${['Full-stack developer','Mobile developer','Designer','Marketer / growth','Founder / operator','Student / career switcher'].map(r=>`<option ${o.role===r?'selected':''}>${r}</option>`).join('')}</select><span class="err">Pick the role closest to what you do.</span></label>
+   <label class="f">Main skills<span class="hint">Separate with commas</span><input type="text" name="skills" value="${esc(o.skills.join(', '))}" required><span class="err">Add at least one skill.</span></label>`;
+  if(st===2)body=`<h1>Who do you want to build with?</h1><p class="muted">Tell us what you offer and what’s missing from your team.</p><label class="f">I can offer<input type="text" name="offer" value="${esc(o.offer)}" required><span class="err">Tell us something you can offer.</span></label><label class="f">I’m looking for<input type="text" name="seek" value="${esc(o.seek)}" required><span class="err">Tell us what you’re looking for.</span></label>`;
+  if(st===3)body=`<h1>What are you aiming for?</h1><p class="muted">Most people want more than one thing. Set the mix; change it any time.</p>${weightsUI()}`;
+  if(st===4)body=`<h1>When can you build?</h1><p class="muted">So introductions respect your time.</p><div class="grid2"><label class="f">Hours per week<select name="hrs"><option>2–4</option><option selected>5–8</option><option>9–15</option><option>15+</option></select></label><label class="f">Language<select name="lng"><option>Telugu + English</option><option>English</option><option>Telugu</option></select></label></div><label class="f">Timezone<select name="tz"><option>India Standard Time (IST)</option><option>Gulf Standard Time</option><option>US Pacific</option></select><span class="hint">We never ask for your precise location.</span></label>`;
+  if(st===5)body=`<h1>Your privacy, your call</h1><p class="muted">Phone, email and social handles stay hidden. Chat happens in the app after both of you say yes.</p>
+   <label class="opt"><input type="checkbox" name="consent" ${o.consent?'checked':''} required><span><b>Include me in matching</b><br><span class="small muted">Suggest me to people with complementary skills. You can switch this off anytime.</span><span class="err" style="display:block">Matching needs your consent. You can still browse without it.</span></span></label><label class="f">Portfolio link <span class="hint">(optional)</span><input type="url" name="url" placeholder="https://"></label>`;
+  if(st===6){const first=Object.keys(GOALS).sort((a,b)=>S.weights[b]-S.weights[a])[0];
+   body=`<p class="lbl">Your builder persona</p><h1>${esc(o.role||'Builder')} who wants to ${S.weights.startup>=S.weights.career?'build a startup':'grow a career'}</h1><p class="muted">Based only on what you told us. Remove or edit anything that’s not right.</p>
+   <section class="card flat stack-s"><h3>Skills</h3><div class="row wrap">${o.skills.map(s=>`<span class="chip">${esc(s)}</span>`).join('')}</div><h3 style="margin-top:8px">Suggested interests <span class="chip">Suggested</span></h3><div class="row wrap" id="sugg">${o.suggested.map((s,i)=>`<span class="chip acc">${s} <button class="link" style="color:inherit" data-a="rmsugg" data-id="${i}" aria-label="Remove ${s}">${ic('x',12)}</button></span>`).join('')||'<span class="small muted">None left.</span>'}</div><h3 style="margin-top:8px">Goal mix</h3>${wbar()}<p class="xs muted">Top goal: ${GOALS[first][0]} (${S.weights[first]}%)</p></section>
+   <div class="banner">${ic('info')}<p class="small">We found <b>${S.fourCount}</b> introductions that fit. You decide who you talk to.</p></div>`}
+  $('#onb').innerHTML=`<div class="onb-card"><div class="row between"><a class="logo" href="#/home" style="padding:0"><b>N</b><span>Nightclub</span></a><button class="link small" data-a="skiponb">Skip for now</button></div>${st<=N?`<div class="pills" role="img" aria-label="Step ${st} of ${N}">${Array.from({length:N},(_,i)=>`<i class="${i<st?'on':''}"></i>`).join('')}</div><p class="xs muted">Step ${st} of ${N} · saved automatically</p>`:''}
+  <form class="card stack" data-form="onb" novalidate>${body}<div class="dlg-f" style="justify-content:space-between">${st>1&&st<=N?'<button type="button" class="btn ghost" data-a="onbback">Back</button>':'<span></span>'}<button class="btn primary">${st===N?'See my persona':st>N?'See my first introductions':'Continue'}</button></div></form></div>`;
+}
+
+/* ═════════ dialogs ═════════ */
+function dlg(html,wide){const d=$('#dlg');d.innerHTML=`<div class="dlg-body">${html}</div>`;d.classList.toggle('wide',!!wide);if(!d.open)d.showModal()}
+const dh=(t,s)=>`<div class="dlg-h"><div><h2 id="dlg-title" style="font-size:20px">${t}</h2>${s?`<p class="small muted" style="margin-top:2px">${s}</p>`:''}</div><button class="ib" data-a="close" aria-label="Close" style="margin:-6px -6px 0 0">${ic('x')}</button></div>`;
+function loopDlg(){
+  const L=LOOPS[LOOPKEY[route().r]||'home'];
+  const step=(k,l,x)=>`<div class="card flat" style="padding:12px 14px"><p class="lbl">${l}</p><p class="small" style="margin-top:2px">${x}</p></div>`;
+  dlg(`${dh(L.t,L.job)}<div class="grid2">${step('T','1 · Trigger',L.T)}${step('A','2 · Action',L.A)}${step('R','3 · Variable reward',L.R)}${step('I','4 · Investment',L.I)}</div>${step('N','5 · Next trigger',L.N)}<div class="banner" style="background:var(--nc-success-bg);border-color:transparent">${ic('shield')}<div class="small"><b>Guardrail.</b> ${L.G}</div></div><p class="small muted"><b>Measured by:</b> ${L.M}</p><div class="dlg-f"><button class="btn primary" data-a="close">Got it</button></div>`,true);
+}
+function whyDlg(id){const m=M(id);dlg(`${dh('Why this match?',`${m.name} · ${m.role}`)}<span class="chip acc" style="align-self:flex-start">${m.tier}</span><div><h3>Reasons</h3><ul class="small" style="padding-left:18px;display:grid;gap:4px;margin-top:6px">${m.why.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><h3>Limits we know about</h3><ul class="small muted" style="padding-left:18px;display:grid;gap:4px;margin-top:6px">${m.lim.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><h3>Evidence</h3><div class="stack-s" style="margin-top:6px">${m.ev.map(([x,p])=>`<div class="row between wrap small"><span>${x}</span>${prov(p)}</div>`).join('')}</div></div><p class="xs muted">This is a ranking aid, not a prediction of friendship or success. We don’t show a percentage.</p><div class="dlg-f"><button class="btn" data-a="close">Close</button><button class="btn primary" data-a="req" data-id="${id}">Request introduction</button></div>`)}
+function profileDlg(id){const m=M(id)||{name:'Member',role:'',h:120,skills:[],avail:'',lang:''};dlg(`${dh(m.name,m.role)}<div class="row">${av(m.name,m.h,56)}<div class="small muted">${m.avail}<br>${m.lang}</div></div><div class="row wrap">${m.skills.map(x=>`<span class="chip">${x}</span>`).join('')}</div><div class="banner">${ic('lock')}<p class="small">Phone, email and social handles aren’t shown. After you connect, you can chat in the app.</p></div><div class="dlg-f"><button class="btn danger sm" data-a="report">Report</button><button class="btn" data-a="close">Close</button><button class="btn primary" data-a="${['divya','meera','vamsi'].includes(id)?'openconv':'req'}" data-id="${id}">${['divya','meera','vamsi'].includes(id)?'Message':'Request introduction'}</button></div>`)}
+function cmdOpen(){const d=$('#cmd');$('#cmdq').value='';cmdList('');d.showModal();$('#cmdq').focus()}
+function cmdList(q){q=q.toLowerCase();const items=[...NAV.map(([k,l,i])=>({l:t(l),i,go:`#/${k}`,k:'Go to'})),{l:'Settings',i:'gear',go:'#/settings',k:'Go to'},{l:'Membership',i:'card',go:'#/membership',k:'Go to'},{l:'Safety & privacy',i:'shield',go:'#/safety',k:'Go to'},...MEMBERS.map(m=>({l:`${m.name} · ${m.role}`,i:'user',pro:m.id,k:'Member'})),{l:'Telugu Tutor AI',i:'circles',go:'#/circles/telugu-tutor',k:'Circle'}].filter(x=>!q||x.l.toLowerCase().includes(q)).slice(0,9);
+  $('#cmdl').innerHTML=items.length?items.map(x=>`<li><button data-a="cmdgo" ${x.go?`data-go="${x.go}"`:`data-pro="${x.pro}"`}>${ic(x.i)}<span class="grow">${esc(x.l)}</span><span class="xs muted">${x.k}</span></button></li>`).join(''):'<li class="small muted" style="padding:14px">Nothing found. Try a skill, name or screen.</li>'}
+
+/* ═════════ actions ═════════ */
+function popClose(el){const p=el.closest('[popover]');if(p)try{p.hidePopover()}catch{}}
+function setConvFrom(id){if(!S.convs[id])S.convs[id]=[];S.conv=id;S.convOpen=1}
+
+
+/* light / dark toggle */
+function effTheme(){return document.documentElement.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light')}
+function themeBtn(){const b=document.getElementById('themebtn');if(!b)return;const d=effTheme()==='dark';b.setAttribute('aria-label',d?'Switch to light mode':'Switch to dark mode');b.innerHTML=d?'<svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>':'<svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'}
+function setTheme(id){if(id==='system')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=id;try{id==='system'?localStorage.removeItem('nc-theme'):localStorage.setItem('nc-theme',id)}catch(e){}themeBtn()}
+try{const st=localStorage.getItem('nc-theme');if(st)document.documentElement.dataset.theme=st}catch(e){}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',themeBtn);
+themeBtn();
+/* palettes (prototype toggle) */
+const PALS=[['pulse','Pulse','#C81E5B','#E8561A','Hot pink to orange, social energy'],['zest','Zest','#0A7A1E','#F8CB46','Fresh green with a yellow pop'],['spark','Spark','#D9480F','#C2255C','Orange into magenta, quick-commerce'],['wave','Wave','#0A66C2','#0B8F8C','Professional blue into teal'],['graphite','Graphite','#111111','#8e8e93','Neutral black and white']];
+function setPal(id){const r=document.documentElement;if(id==='pulse')delete r.dataset.palette;else r.dataset.palette=id;try{localStorage.setItem('nc-pal3',id)}catch(e){}palPop()}
+function palPop(){const cur=document.documentElement.dataset.palette||'pulse';document.getElementById('pop-pal').innerHTML=`<div style="padding:8px 10px"><h2>Colour palette</h2><p class="xs muted">Try each one. Works in light and dark.</p><div class="row wrap" style="margin-top:8px">${['light','dark'].map(x=>`<button class="chip" aria-pressed="${effTheme()===x}" data-a="theme" data-id="${x}">${x[0].toUpperCase()+x.slice(1)}</button>`).join('')}</div></div><div class="pal">${PALS.map(([k,n,a,t,d])=>`<button aria-pressed="${cur===k}" data-a="pal" data-id="${k}"><span class="sw3" aria-hidden="true" style="background:linear-gradient(135deg,${a},${t})"></span><span><b>${n}</b><br><span class="xs muted">${d}</span></span></button>`).join('')}</div>`}
+try{const sp=localStorage.getItem('nc-pal3');if(sp&&sp!=='pulse')document.documentElement.dataset.palette=sp}catch(e){}
+palPop();
+function protoPop(){$('#pop-proto').innerHTML=`<div style="padding:8px 10px"><h2>Prototype controls</h2><p class="xs muted">Not part of the product. For exploring states.</p></div><div class="stack" style="padding:6px 10px 10px"><div><p class="lbl">Theme</p><div class="row wrap" style="margin-top:6px">${['system','light','dark'].map(x=>`<button class="chip" aria-pressed="${(document.documentElement.dataset.theme||'system')===x}" data-a="theme" data-id="${x}">${x}</button>`).join('')}</div></div><div><p class="lbl">Language (sample)</p><div class="row wrap" style="margin-top:6px"><button class="chip" aria-pressed="${S.lang==='en'}" data-a="lang" data-id="en">English</button><button class="chip" aria-pressed="${S.lang==='te'}" data-a="lang" data-id="te">తెలుగు</button></div></div><div><p class="lbl">Find Your Four inventory</p><div class="row wrap" style="margin-top:6px">${[4,2,0].map(n=>`<button class="chip" aria-pressed="${S.fourCount===n}" data-a="four-n" data-id="${n}">${n===4?'Four':n===2?'Only two':'None yet'}</button>`).join('')}</div></div><button class="btn sm" data-a="reset">Reset demo</button></div>`}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id;
+  if(a==='go'){popClose(b);return}
+  const rv=()=>view();
+  switch(a){
+  case 'close':$('#dlg').close();break;
+  case 'cmd':cmdOpen();break;
+  case 'cmdgo':$('#cmd').close();if(b.dataset.go)location.hash=b.dataset.go;else profileDlg(b.dataset.pro);break;
+  case 'loop':loopDlg();break;
+  case 'hidebanner':S.banner=false;rv();break;
+  case 'readall':S.notifs.forEach(n=>n.unread=0);renderNav();break;
+  case 'theme-toggle':{setTheme(effTheme()==='dark'?'light':'dark');palPop();if(route().r==='settings')rv();break}
+  case 'pal':{setPal(id);break}
+  case 'theme':{setTheme(id);protoPop();palPop();if(route().r==='settings')rv();break}
+  case 'lang':S.lang=id;document.documentElement.lang=id==='te'?'te':'en';protoPop();rv();break;
+  case 'four-n':S.fourCount=+id;protoPop();rv();break;
+  case 'reset':location.hash='#/home';setTimeout(()=>location.reload(),50);break;
+  case 'accept-divya':S.queue.shift();S.notifs=S.notifs.filter(n=>n.id!==1);setConvFrom('divya');S.convs.divya=[{me:0,x:'Thanks for accepting! I have the dashboard data ready. Are you free this weekend?'}];toast('Connected with Divya. You can now message in the app.');rv();break;
+  case 'decline-divya':S.queue.shift();toast('No problem. Divya isn’t told why.');rv();break;
+  case 'skipq':S.queue.shift();rv();break;
+  case 'profile':popClose(b);$('#dlg').open&&$('#dlg').close();profileDlg(id);break;
+  case 'rsvp':S.rsvp[id]=!S.rsvp[id];toast(S.rsvp[id]?'You’re registered. We’ll remind you as you chose. Attendance is recorded separately.':'RSVP cancelled.');rv();if($('#dlg').open&&$('#dlg').dataset.s)$('#dlg').close();break;
+  case 'why':whyDlg(id);break;
+  case 'req':{S.four[id]='requested';$('#dlg').open&&$('#dlg').close();toast(`Request sent to ${M(id).name.split(' ')[0]}. We’ll tell you when they reply.`);rv();break}
+  case 'save4':S.four[id]=S.four[id]==='saved'?'none':'saved';rv();break;
+  case 'notnow':dlg(`${dh('Not now?','Optional: this helps us suggest better people.')}<div class="stack-s">${['Not the skill I need','Wrong goal','Timing isn’t right','Prefer not to say'].map(x=>`<label class="opt"><input type="radio" name="r" ${x==='Prefer not to say'?'checked':''}> ${x}</label>`).join('')}</div><div class="dlg-f"><button class="btn" data-a="close">Cancel</button><button class="btn primary" data-a="notnow-ok" data-id="${id}">Dismiss</button></div>`);break;
+  case 'notnow-ok':S.four[id]='declined';$('#dlg').close();rv();break;
+  case 'undo4':S.four[id]='none';rv();break;
+  case 'sim':S.four[id]=b.dataset.v;if(b.dataset.v==='accepted'){setConvFrom(id);S.convs[id]=[{me:0,x:`Hi Ravi, glad to connect. ${M(id).contrib}`}];toast(`${M(id).name.split(' ')[0]} accepted. You can message in the app.`)}else toast('Declined. A replacement is available.');rv();break;
+  case 'replace':{const r=id==='anjali'?'harsha':id==='priya'?'vamsi':'meera';profileDlg(r);break}
+  case 'propose':case 'propose2':dlg(`${dh('Propose a circle','Invite the people who said yes. Nobody joins without accepting.')}<div class="stack-s">${MEMBERS.slice(0,4).filter(m=>['requested','accepted'].includes(S.four[m.id])).map(m=>`<label class="opt"><input type="checkbox" checked> ${av(m.name,m.h,28)} ${m.name} <span class="chip ${S.four[m.id]==='accepted'?'ok':'warn'}">${stLabel(S.four[m.id])}</span></label>`).join('')||'<p class="small muted">Start with just yourself and invite people later.</p>'}</div><label class="f">What are you building?<input type="text" id="cobj" value="Telugu Tutor AI" required><span class="err">Give the circle a goal.</span></label><p class="xs muted">Circles are 2–5 people by default. You can start smaller.</p><div class="dlg-f"><button class="btn" data-a="close">Cancel</button><button class="btn primary" data-a="propose-ok">Send invitations</button></div>`);break;
+  case 'propose-ok':$('#dlg').close();toast('Invitations sent. The circle forms when people accept.');break;
+  case 'feedback':dlg(`${dh('Give feedback',`On ${M(id).name.split(' ')[0]}’s update`)}<label class="f">Your feedback<span class="hint">Specific and kind works best. Tell them what worked and one thing to try.</span><textarea id="fb" required minlength="12"></textarea><span class="err">Add a little more detail so it’s useful.</span></label><div class="dlg-f"><button class="btn" data-a="close">Cancel</button><button class="btn primary" data-a="feedback-ok">Send feedback</button></div>`);break;
+  case 'feedback-ok':{const t=$('#fb');if(!t.checkValidity()){t.reportValidity();break}$('#dlg').close();toast('Feedback sent. Thank you.');break}
+  case 'save':S.saved[id]=!S.saved[id];toast(S.saved[id]?'Saved':'Removed from saved');rv();break;
+  case 'contribute':dlg(`${dh('Ask to contribute',`Message to ${M(id).name.split(' ')[0]}`)}<label class="f">What could you help with?<textarea>I can help with the web UI. I have about 6 hours a week.</textarea></label><div class="dlg-f"><button class="btn" data-a="close">Cancel</button><button class="btn primary" data-a="toastok" data-id="Sent. They’ll reply in the app.">Send</button></div>`);break;
+  case 'toastok':$('#dlg').open&&$('#dlg').close();toast(id);break;
+  case 'dtab':S.dtab=id;rv();break;
+  case 'cat':S.cat=id;$$('#cats .chip').forEach(c=>c.setAttribute('aria-pressed',c.dataset.id===id));results();break;
+  case 'savesearch':toast('Search saved. We’ll digest new matches, only if they genuinely qualify.');break;
+  case 'ofilter':S.ofilter=id;if($('#obody'))$('#obody').innerHTML=oppsBody();else dbody();break;
+  case 'opp':{const o=OPPS.find(x=>x.id===id);dlg(`${dh(o.title,o.org)}<div class="row wrap">${o.verified?'<span class="chip ok">Verified listing</span>':'<span class="chip warn">Community experiment</span>'}<span class="chip">${GOALS[o.goal][0]}</span></div><p><b>Why it fits:</b> ${o.why}</p><div class="banner">${ic('info')}<p class="small">Introductions are not hiring guarantees. The company sees your contact details only if you choose to share them.</p></div><div class="dlg-f"><button class="btn" data-a="close">Close</button><button class="btn" data-a="toastok" data-id="Introduction requested.">Request introduction</button><button class="btn primary" data-a="toastok" data-id="Interest sent with your Passport evidence.">Express interest</button></div>`);break}
+  case 'inv':S.inv='done';toast(id==='join'?'You joined Hackathon Dashboard Team.':'Invitation declined.');rv();break;
+  case 'ctab':S.circleTab=id;rv();break;
+  case 'leave':dlg(`${dh('Leave this circle?','You can leave any time. Teammates are told you left, nothing else.')}<div class="dlg-f"><button class="btn" data-a="close" autofocus>Stay</button><button class="btn danger" data-a="leave-ok">Leave circle</button></div>`);break;
+  case 'leave-ok':$('#dlg').close();toast('You left the circle (prototype: nothing changed).');break;
+  case 'claim':{const x=S.tasks.find(t=>t.id===id);x.who='me';x.st='doing';toast('Claimed. It’s on your board.');rv();break}
+  case 'evidence':dlg(`${dh('Submit evidence','Attach something a teammate can check.')}<label class="f">Link to artifact<input type="url" id="ev" placeholder="https://github.com/…" required><span class="err">Enter a valid link so reviewers can check it.</span></label><label class="f">Short note<textarea placeholder="What did you build, and what should the reviewer look at?"></textarea></label><div class="dlg-f"><button class="btn" data-a="close">Cancel</button><button class="btn primary" data-a="evidence-ok" data-id="${id}">Request review</button></div>`);break;
+  case 'evidence-ok':{const i=$('#ev');if(!i.checkValidity()){i.reportValidity();break}S.tasks.find(t=>t.id===id).st='review';$('#dlg').close();toast('Review requested.');rv();break}
+  case 'simreview':{const x=S.tasks.find(t=>t.id===id);x.st='verified';toast(id==='t3'?'Verified by your team. Milestone complete! A Passport draft is ready.':'Verified.');rv();break}
+  case 'review':{const x=S.tasks.find(t=>t.id==='t2');dlg(`${dh('Review: Lesson API endpoints','Requested by Vamsi Krishna')}<div class="card flat stack-s"><div class="row between"><b class="small">Evidence</b>${prov('verified')}</div><p class="small muted">Pull request · 14 files · tests passing</p></div><fieldset style="border:1px solid var(--nc-border);border-radius:12px;padding:12px" class="stack-s"><legend class="small"><b>Checklist</b></legend>${['Endpoints match the agreed contract','Auth edge cases are covered','Errors are readable'].map(c=>`<label class="row small"><input type="checkbox"> ${c}</label>`).join('')}</fieldset><div class="dlg-f"><button class="btn" data-a="review-no">Request changes</button><button class="btn primary" data-a="review-ok">Accept &amp; verify</button></div>`);break}
+  case 'review-ok':{S.tasks.find(t=>t.id==='t2').st='verified';if(S.queue[0]==='review')S.queue.shift();S.notifs=S.notifs.filter(n=>n.id!==2);$('#dlg').close();toast('Verified. Vamsi is notified.');rv();break}
+  case 'review-no':$('#dlg').close();toast('Changes requested, with your checklist attached.');break;
+  case 'rescope':dlg(`${dh('Adjust the plan','No blame. Plans change.')}<label class="f">What changed?<select><option>Took longer than expected</option><option>Priorities shifted</option><option>Need help with a part of it</option></select></label><label class="f">New proposed date<input type="text" value="Next Wednesday"></label><p class="xs muted">The team will be asked to agree to the new date.</p><div class="dlg-f"><button class="btn" data-a="close">Cancel</button><button class="btn primary" data-a="toastok" data-id="Proposed to the team.">Propose new date</button></div>`);break;
+  case 'sess':{const s=SESS.find(x=>x.id===id);dlg(`${dh(s.title,s.when)}<p>${s.what}</p><div><h3>Prepare</h3><ul class="small" style="padding-left:18px;margin-top:6px;display:grid;gap:4px">${s.prereq.map(p=>`<li>${p}</li>`).join('')}</ul></div><div class="banner">${ic('lock')}<p class="small">The join link appears here 15 minutes before it starts, for registered, entitled members only.</p></div><div class="dlg-f"><button class="btn" data-a="close">Close</button><button class="btn" data-a="toastok" data-id="Calendar file downloaded.">Add to calendar</button><button class="btn primary" data-a="rsvp" data-id="${s.id}">${S.rsvp[s.id]?'Cancel RSVP':'RSVP'}</button></div>`);break}
+  case 'notes':toast('Opens your saved notes and next build step.');break;
+  case 'conv':S.conv=id;S.convOpen=1;rv();break;
+  case 'mback':S.convOpen=0;rv();break;
+  case 'openconv':{$('#dlg').open&&$('#dlg').close();setConvFrom(id);location.hash='#/messages';if(route().r==='messages')rv();break}
+  case 'starter':{const ta=$('form[data-form=chat] textarea');ta.value=id;ta.focus();break}
+  case 'mute':popClose(b);toast('Conversation muted. You’ll still see it in your inbox.');break;
+  case 'block':popClose(b);dlg(`${dh('Block this member?','They won’t be able to message you or find you. They aren’t told.')}<div class="dlg-f"><button class="btn" data-a="close">Cancel</button><button class="btn danger" data-a="toastok" data-id="Blocked. You can undo this in Safety.">Block</button></div>`);break;
+  case 'report':popClose(b);dlg(`${dh('Report','We’ll only send factual status updates about your report.')}<label class="f">What happened?<select required><option value="">Choose</option><option>Unwanted or harassing message</option><option>Suspicious invitation</option><option>Fake or misleading profile</option><option>Privacy concern</option></select><span class="err">Choose what happened.</span></label><label class="f">Details <span class="hint">(optional)</span><textarea></textarea></label><div class="dlg-f"><button class="btn" data-a="close">Cancel</button><button class="btn primary" data-a="toastok" data-id="Report received. We’ll update you here.">Submit report</button></div>`);break;
+  case 'unblock':S.blocked.splice(+id,1);rv();break;
+  case 'publish':{const dr=id==='draft';dlg(`${dh('Publish a project story','Choose how it’s shown. Teammates can validate it.')}<label class="f">Title<input type="text" id="pt" value="${dr?'Voice lesson prototype':''}" required><span class="err">Give your story a title.</span></label><label class="f">Your role<input type="text" id="pr" value="${dr?'UI & integration':''}" required><span class="err">Say what you did.</span></label><label class="f">What happened?<textarea placeholder="What did you build, and what changed because of it?"></textarea></label><fieldset style="border:0;padding:0" class="stack-s"><legend class="small"><b>Visibility</b></legend>${['Private','Members only','Public link'].map((v,i)=>`<label class="opt"><input type="radio" name="vis" ${i===1?'checked':''}> ${v}</label>`).join('')}</fieldset><p class="xs muted">Don’t share confidential client work. New stories start as ${prov('self')}${dr?' (the milestone itself is verified)':''} until teammates validate.</p><div class="dlg-f"><button class="btn" data-a="close">Cancel</button><button class="btn primary" data-a="publish-ok" data-id="${dr?'draft':''}">Publish</button></div>`);break}
+  case 'publish-ok':{const t=$('#pt'),r=$('#pr');if(!t.checkValidity()){t.reportValidity();break}if(!r.checkValidity()){r.reportValidity();break}S.stories.unshift({id:id||'n'+Date.now(),t:t.value,role:r.value,h:Math.floor(Math.random()*300),p:id==='draft'?'verified':'self',d:'Just published. Teammates can now validate it.'});$('#dlg').close();toast('Published. Validation requested from your teammates.');rv();break}
+  case 'stab':S.settingsTab=id;rv();break;
+  case 'preset':{Object.assign(S.weights,JSON.parse(b.dataset.w));syncW();toast('Goals updated. Recommendations will adapt.');break}
+  case 'export':toast('Export requested. We’ll email a download link.');break;
+  case 'delacct':dlg(`${dh('Delete your account?','This removes your profile, messages and Passport. It can’t be undone.')}<div class="dlg-f"><button class="btn" data-a="close" autofocus>Keep my account</button><button class="btn danger" data-a="toastok" data-id="Prototype: nothing was deleted.">Delete everything</button></div>`);break;
+  case 'pay':toast('Opens secure payment update.');break;
+  case 'cancel':dlg(`${dh('Cancel membership?','You’ll keep access until 3 Dec 2026.')}<p class="small muted">That’s it, one confirmation, the same effort as signing up. Your data stays yours; you can export it any time.</p><div class="dlg-f"><button class="btn" data-a="close" autofocus>Keep membership</button><button class="btn danger" data-a="toastok" data-id="Prototype: membership unchanged.">Cancel membership</button></div>`);break;
+  case 'rmsugg':S.onb.suggested.splice(+id,1);renderOnb();break;
+  case 'onbback':S.onb.step--;renderOnb();break;
+  case 'skiponb':location.hash='#/home';break;
+  }
+});
+document.addEventListener('input',e=>{
+  const w=e.target.closest('[data-w]');if(w){setWeight(w.dataset.w,w.value);return}
+  if(e.target.id==='q'){S.q=e.target.value;results()}
+  if(e.target.id==='cmdq')cmdList(e.target.value);
+});
+document.addEventListener('change',e=>{
+  const p=e.target.closest('[data-pref]');if(p){S.prefs[p.dataset.pref]=p.checked;toast(p.checked?'Turned on':'Turned off')}
+});
+document.addEventListener('submit',e=>{
+  const f=e.target.closest('form[data-form]');if(!f)return;e.preventDefault();const k=f.dataset.form;
+  if(k==='chat'||k==='circlechat'){const v=f.m.value.trim();if(!v)return;const key=k==='circlechat'?'circle':S.conv;(S.convs[key]=S.convs[key]||[]).push({me:1,x:v});
+    if(k==='chat'&&key!=='circle')setTimeout(()=>{if(route().r!=='messages'||S.conv!==key)return;S.convs[key].push({me:0,x:'Sounds good! Let me check my week and get back to you shortly.'});view()},1100);
+    view();const ta=$('form[data-form] textarea, form[data-form] input[name=m]');ta&&ta.focus()}
+  if(k==='onb'){const o=S.onb;if(!f.checkValidity()){f.reportValidity();return}
+    if(o.step===1){o.role=f.role.value;o.skills=f.skills.value.split(',').map(s=>s.trim()).filter(Boolean)}
+    if(o.step===2){o.offer=f.offer.value;o.seek=f.seek.value}
+    if(o.step===5)o.consent=f.consent.checked;
+    if(o.step===6){location.hash='#/four';o.step=1;return}
+    o.step++;renderOnb();scrollTo(0,0)}
+});
+addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#cmd').open?$('#cmd').close():cmdOpen()}});
+$('#cmdq').addEventListener('keydown',e=>{if(e.key==='Enter'){const f=$('#cmdl button');if(f)f.click()}});
+$('#pop-proto').addEventListener('beforetoggle',e=>{if(e.newState==='open')protoPop()});
+/* Safari fallback for closedby="any": close on outside press+release */
+if(!('closedBy' in HTMLDialogElement.prototype)){for(const d of $$('dialog[closedby="any"]')){let down=false;const out=(e)=>{const r=d.getBoundingClientRect();return e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom};d.addEventListener('pointerdown',e=>{down=out(e)});d.addEventListener('pointerup',e=>{if(down&&out(e))d.close()})}}
+addEventListener('resize',()=>{$('#topsearch').style.display=matchMedia('(max-width:759px)').matches?'grid':'none'});
+view();
+</script>
+</body>
+</html>
